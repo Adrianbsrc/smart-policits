@@ -1,0 +1,19 @@
+{
+  "name": "@smart-politics/auth",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@smart-politics/types": "workspace:*",
+    "@supabase/supabase-js": "^2.47.0"
+  },
+  "devDependencies": {
+    "@smart-politics/tsconfig": "workspace:*",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  user
+  admin
+  moderator
+}
+
+enum Office {
+  president
+  governor
+  senator
+  federal_deputy
+  state_deputy
+}
+
+enum PartyIdeology {
+  far_left
+  left
+  center_left
+  center
+  center_right
+  right
+  far_right
+}
+
+model User {
+  id         String   @id @default(cuid())
+  supabaseId String   @unique @map("supabase_id")
+  email      String   @unique
+  name       String?
+  avatarUrl  String?  @map("avatar_url")
+  role       UserRole @default(user)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  follows     Follow[]
+  quizResults QuizResult[]
+  alerts      Alert[]
+
+  @@map("users")
+}
+
+model Party {
+  id        String        @id @default(cuid())
+  name      String        @unique
+  acronym   String        @unique
+  colorHex  String        @map("color_hex")
+  logoUrl   String?       @map("logo_url")
+  ideology  PartyIdeology
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  candidates Candidate[]
+
+  @@map("parties")
+}
+
+model Candidate {
+  id        String   @id @default(cuid())
+  tseId     String?  @unique @map("tse_id")
+  name      String
+  slug      String   @unique
+  office    Office
+  state     String?
+  photoUrl  String?  @map("photo_url")
+  bio       String?
+  partyId   String?  @map("party_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  party   Party?  @relation(fields: [partyId], references: [id])
+  score   Score?
+  follows Follow[]
+  alerts  Alert[]
+
+  @@index([office, state])
+  @@index([slug])
+  @@map("candidates")
+}
+
+model Score {
+  id           String @id @default(cuid())
+  candidateId  String @unique @map("candidate_id")
+  overall      Float
+  // Dimensões principais — peso 2× no overall
+  education    Float @default(0)
+  health       Float @default(0)
+  security     Float @default(0)
+  economy      Float @default(0)
+  transparency Float @default(0)
+  // Dimensões complementares — peso 1× no overall
+  environment      Float @default(0)
+  infrastructure   Float @default(0)
+  technology       Float @default(0)
+  agriculture      Float @default(0)
+  international    Float @default(0)
+  culture          Float @default(0)
+  socialRights     Float @default(0) @map("social_rights")
+  entrepreneurship Float @default(0)
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("scores")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  candidateId String   @map("candidate_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, candidateId])
+  @@map("follows")
+}
+
+model QuizResult {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  answers     Json
+  completedAt DateTime @default(now()) @map("completed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("quiz_results")
+}
+
+enum AlertType {
+  score_change
+  news
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  type        AlertType
+  title       String
+  body        String
+  candidateId String?   @map("candidate_id")
+  read        Boolean   @default(false)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  candidate Candidate? @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+
+  @@index([userId, read])
+  @@map("alerts")
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@smart-politics/types",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@smart-politics/tsconfig": "workspace:*",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "smart-politics",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,css,md}\" --ignore-path .gitignore",
+    "db:generate": "pnpm --filter @smart-politics/db db:generate",
+    "db:migrate": "pnpm --filter @smart-politics/db db:migrate",
+    "db:push": "pnpm --filter @smart-politics/db db:push",
+    "db:studio": "pnpm --filter @smart-politics/db db:studio"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.21",
+    "@types/node": "^20.0.0",
+    "prettier": "^3.4.2",
+    "turbo": "^2.9.6",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "prisma": "^7.8.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@prisma/engines", "prisma", "sharp"]
+  },
+  "packageManager": "pnpm@10.33.2"
+}

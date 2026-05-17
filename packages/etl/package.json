@@ -1,0 +1,26 @@
+{
+  "name": "@smart-politics/etl",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "sync:camara": "tsx scripts/sync-camara.ts",
+    "sync:senado": "tsx scripts/sync-senado.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@smart-politics/db": "workspace:*",
+    "@smart-politics/scoring": "workspace:*",
+    "@smart-politics/types": "workspace:*",
+    "dotenv": "^16.0.0",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
