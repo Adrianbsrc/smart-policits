@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
-import type { CandidateResult } from "../candidates/candidates.repository";
-import { CandidatesService } from "../candidates/candidates.service";
+import type { PoliticianResult } from "../politicians/politicians.repository";
+import { PoliticiansService } from "../politicians/politicians.service";
 import { QuizRepository } from "./quiz.repository";
 
 export interface DimensionWeights {
@@ -21,7 +21,7 @@ export interface DimensionWeights {
 }
 
 export interface MatchResult {
-  candidateId: string;
+  politicianId: string;
   name: string;
   slug: string;
   office: string;
@@ -44,35 +44,26 @@ function computeWeights(answers: Record<string, string>): DimensionWeights {
     international: 1.0, culture: 1.0, socialRights: 1.0, entrepreneurship: 1.0,
   };
 
-  // Q1 — priority area: +50% to the chosen dimension
   const priorityMap: Partial<Record<string, keyof DimensionWeights>> = {
-    seguranca: "security",
-    saude: "health",
-    educacao: "education",
-    economia: "economy",
-    ambiente: "environment",
-    infraestrutura: "infrastructure",
+    seguranca: "security", saude: "health", educacao: "education",
+    economia: "economy", ambiente: "environment", infraestrutura: "infrastructure",
   };
   const q1dim = priorityMap[answers["1"] ?? ""];
   if (q1dim) w[q1dim] *= 1.5;
 
-  // Q2 — role of state in economy
   if (answers["2"] === "mais_estado") {
     w.economy *= 0.6; w.socialRights *= 1.2; w.entrepreneurship *= 0.7;
   } else if (answers["2"] === "menos_estado") {
     w.economy *= 1.4; w.entrepreneurship *= 1.3; w.socialRights *= 0.7;
   }
 
-  // Q3 — transparency / anti-corruption priority
   const transpMap: Record<string, number> = { muito: 1.5, importante: 1.2, pouco: 0.8, nao: 0.5 };
   w.transparency *= transpMap[answers["3"] ?? ""] ?? 1.0;
 
-  // Q4 — education & technology investment
   if (answers["4"] === "aumentar") w.education *= 1.5;
   else if (answers["4"] === "privado") w.education *= 0.8;
   else if (answers["4"] === "tecnologia") { w.education *= 1.2; w.technology *= 1.3; }
 
-  // Q5 — economic freedom & entrepreneurship
   if (answers["5"] === "livre") {
     w.economy *= 1.3; w.entrepreneurship *= 1.4;
   } else if (answers["5"] === "regulado") {
@@ -81,7 +72,6 @@ function computeWeights(answers: Record<string, string>): DimensionWeights {
     w.economy *= 0.6; w.socialRights *= 1.5; w.entrepreneurship *= 0.7;
   }
 
-  // Q6 — environment vs economic growth
   if (answers["6"] === "muito_importante") {
     w.environment *= 1.5; w.agriculture *= 0.9;
   } else if (answers["6"] === "crescimento") {
@@ -90,7 +80,6 @@ function computeWeights(answers: Record<string, string>): DimensionWeights {
     w.environment *= 0.8; w.entrepreneurship *= 1.1;
   }
 
-  // Q7 — health system model
   if (answers["7"] === "sus_universal") {
     w.health *= 1.5; w.socialRights *= 1.1;
   } else if (answers["7"] === "privado") {
@@ -99,9 +88,8 @@ function computeWeights(answers: Record<string, string>): DimensionWeights {
     w.health *= 1.2;
   }
 
-  // Q8 — infrastructure & innovation
   if (answers["8"] === "publico") {
-    w.infrastructure *= 1.4; w.technology *= 1.0;
+    w.infrastructure *= 1.4;
   } else if (answers["8"] === "concessoes") {
     w.infrastructure *= 1.2; w.entrepreneurship *= 1.2;
   } else if (answers["8"] === "tecnologia") {
@@ -110,7 +98,6 @@ function computeWeights(answers: Record<string, string>): DimensionWeights {
     w.infrastructure *= 1.2; w.technology *= 1.2;
   }
 
-  // Q9 — social rights & labor
   if (answers["9"] === "ampliar") {
     w.socialRights *= 1.5; w.economy *= 0.9;
   } else if (answers["9"] === "flexibilizar") {
@@ -119,7 +106,6 @@ function computeWeights(answers: Record<string, string>): DimensionWeights {
     w.socialRights *= 1.1; w.economy *= 1.1;
   }
 
-  // Q10 — foreign policy
   if (answers["10"] === "integracao") {
     w.international *= 1.3;
   } else if (answers["10"] === "global") {
@@ -131,8 +117,8 @@ function computeWeights(answers: Record<string, string>): DimensionWeights {
   return w;
 }
 
-function computeMatchPercent(candidate: CandidateResult, weights: DimensionWeights): number {
-  const { score } = candidate;
+function computeMatchPercent(politician: PoliticianResult, weights: DimensionWeights): number {
+  const { score } = politician;
   if (!score) return 0;
 
   const dims = [
@@ -161,25 +147,25 @@ function computeMatchPercent(candidate: CandidateResult, weights: DimensionWeigh
 export class QuizService {
   constructor(
     private readonly quizRepository: QuizRepository,
-    private readonly candidatesService: CandidatesService,
+    private readonly politiciansService: PoliticiansService,
   ) {}
 
   async submitQuiz(userId: string | null, answers: Record<string, string>) {
     const weights = computeWeights(answers);
-    const candidates = await this.candidatesService.findAllWithScores();
+    const politicians = await this.politiciansService.findAllWithScores();
 
-    const matches: MatchResult[] = candidates
-      .map((c) => ({
-        candidateId: c.id,
-        name: c.name,
-        slug: c.slug,
-        office: c.office,
-        state: c.state,
-        party: c.party
-          ? { name: c.party.name, acronym: c.party.acronym, colorHex: c.party.colorHex }
+    const matches: MatchResult[] = politicians
+      .map((p) => ({
+        politicianId: p.id,
+        name: p.name,
+        slug: p.slug,
+        office: p.office,
+        state: p.state,
+        party: p.party
+          ? { name: p.party.name, acronym: p.party.acronym, colorHex: p.party.colorHex }
           : null,
-        score: c.score?.overall ?? 0,
-        matchPercent: computeMatchPercent(c, weights),
+        score: p.score?.overall ?? 0,
+        matchPercent: computeMatchPercent(p, weights),
       }))
       .sort((a, b) => b.matchPercent - a.matchPercent);
 
@@ -219,20 +205,20 @@ export class QuizService {
     if (!record) return null;
 
     const payload = record.answers as unknown as QuizResultPayload;
-    const candidates = await this.candidatesService.findAllWithScores();
+    const politicians = await this.politiciansService.findAllWithScores();
 
-    const matches: MatchResult[] = candidates
-      .map((c) => ({
-        candidateId: c.id,
-        name: c.name,
-        slug: c.slug,
-        office: c.office,
-        state: c.state,
-        party: c.party
-          ? { name: c.party.name, acronym: c.party.acronym, colorHex: c.party.colorHex }
+    const matches: MatchResult[] = politicians
+      .map((p) => ({
+        politicianId: p.id,
+        name: p.name,
+        slug: p.slug,
+        office: p.office,
+        state: p.state,
+        party: p.party
+          ? { name: p.party.name, acronym: p.party.acronym, colorHex: p.party.colorHex }
           : null,
-        score: c.score?.overall ?? 0,
-        matchPercent: computeMatchPercent(c, payload.weights),
+        score: p.score?.overall ?? 0,
+        matchPercent: computeMatchPercent(p, payload.weights),
       }))
       .sort((a, b) => b.matchPercent - a.matchPercent);
 

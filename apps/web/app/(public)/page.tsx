@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle, BarChart3, ShieldCheck, RefreshCw, Lock, Share2, Gift } from "lucide-react";
+import { CTABanner } from "@/components/cta/cta-banner";
 
 export const metadata: Metadata = {
   title: "Vote com consciência — Smart Politics",
@@ -13,6 +14,15 @@ export default function LandingPage() {
     <div className="flex flex-col">
       <HeroSection />
       <StatsSection />
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <CTABanner
+          featureKey="SHORTS_FEED"
+          title="Novo: Feed de Destaques Políticos"
+          description="Acompanhe os principais políticos, votações e novidades em tempo real. Um feed personalizado com análises e scores atualizados."
+          ctaLabel="Explorar Feed"
+          ctaHref="/feed"
+        />
+      </div>
       <HowItWorksSection />
       <BenefitsSection />
       <RankingPreviewSection />
@@ -39,12 +49,12 @@ function HeroSection() {
           </div>
 
           <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            Descubra quais candidatos{" "}
+            Descubra quais políticos{" "}
             <span className="text-primary">combinam com seus valores.</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            Compare candidatos com base em dados públicos, histórico político e prioridades que importam para você. Sem viés, sem achismo.
+            Compare políticos com base em dados públicos, histórico político e prioridades que importam para você. Sem viés, sem achismo.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
@@ -133,7 +143,7 @@ function HeroSection() {
 
 function StatsSection() {
   const stats = [
-    { value: "3.000+", label: "Candidatos analisados" },
+    { value: "3.000+", label: "Políticos analisados" },
     { value: "15M+", label: "Votações monitoradas" },
     { value: "5", label: "Dimensões de avaliação" },
     { value: "100%", label: "Dados públicos" },
@@ -165,12 +175,12 @@ function HowItWorksSection() {
     {
       step: "02",
       title: "Veja seu alinhamento",
-      description: "Calculamos quais candidatos mais se alinham com os seus valores em cada tema.",
+      description: "Calculamos quais políticos mais se alinham com os seus valores em cada tema.",
     },
     {
       step: "03",
       title: "Monte sua cola eleitoral",
-      description: "Salve seus candidatos favoritos e compartilhe com amigos e família.",
+      description: "Salve seus políticos favoritos e compartilhe com amigos e família.",
     },
   ];
 
@@ -414,8 +424,8 @@ function TransparencySection() {
 
 const FAQ_ITEMS = [
   {
-    question: "Como são calculadas as notas dos candidatos?",
-    answer: "As notas são calculadas com base em dados públicos de desempenho legislativo, presença em votações, projetos aprovados, declarações de bens e ficha eleitoral. Cada dimensão contribui igualmente para a nota final — mas você pode personalizar os pesos no quiz.",
+    question: "Como são calculadas as notas dos políticos?",
+    answer: "As notas são calculadas com base em dados públicos de desempenho legislativo, presença em votações, projetos aprovados, declarações de bens e ficha eleitoral. O Score 2.0 usa 5 pilares estruturais e um multiplicador de integridade — você também pode personalizar os pesos no quiz.",
   },
   {
     question: "O Smart Politics é parcial politicamente?",
@@ -494,7 +504,7 @@ function CtaSection() {
               href="/ranking"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-primary-foreground/20 px-8 text-base font-medium text-primary-foreground transition-all hover:bg-primary-foreground/10 active:scale-[0.97]"
             >
-              Ver ranking de candidatos
+              Ver ranking de políticos
             </Link>
           </div>
         </div>

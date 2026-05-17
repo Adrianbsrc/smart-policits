@@ -50,6 +50,6 @@ export function useDeleteQuizResult() {
 export function useMyMatchPercent(candidateId: string): number | null {
   const { data } = useLatestQuizResult();
   if (!data?.matches) return null;
-  const match = data.matches.find((m: QuizMatch) => m.candidateId === candidateId);
+  const match = data.matches.find((m: QuizMatch) => m.politicianId === candidateId);
   return match?.matchPercent ?? null;
 }

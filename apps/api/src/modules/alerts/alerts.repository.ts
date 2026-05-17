@@ -10,7 +10,7 @@ const alertSelect = {
   body: true,
   read: true,
   createdAt: true,
-  candidate: {
+  politician: {
     select: { id: true, name: true, slug: true, photoUrl: true },
   },
 } as const satisfies Prisma.AlertSelect;
@@ -56,8 +56,8 @@ export class AlertsRepository {
 
   createScoreChangeAlert(data: {
     userId: string;
-    candidateId: string;
-    candidateName: string;
+    politicianId: string;
+    politicianName: string;
     oldScore: number;
     newScore: number;
   }): Promise<{ id: string }> {
@@ -67,9 +67,9 @@ export class AlertsRepository {
       data: {
         userId: data.userId,
         type: "score_change",
-        title: `Mudança de nota: ${data.candidateName}`,
-        body: `A nota geral de ${data.candidateName} ${direction} de ${data.oldScore.toFixed(1)} para ${data.newScore.toFixed(1)}.`,
-        candidateId: data.candidateId,
+        title: `Mudança de nota: ${data.politicianName}`,
+        body: `A nota geral de ${data.politicianName} ${direction} de ${data.oldScore.toFixed(1)} para ${data.newScore.toFixed(1)}.`,
+        politicianId: data.politicianId,
       },
       select: { id: true },
     });

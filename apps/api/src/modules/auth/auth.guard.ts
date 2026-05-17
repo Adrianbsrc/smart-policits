@@ -1,18 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
 import type { Request } from "express";
 
 import type { UserResult } from "../users/users.repository";
 import { UsersService } from "../users/users.service";
-
-interface SupabaseJwtPayload {
-  sub: string;
-  email: string;
-  user_metadata?: { name?: string; avatar_url?: string };
-  aud: string;
-  role: string;
-  exp: number;
-}
+import { getAdminClient } from "./supabase-admin";
 
 export interface AuthenticatedRequest extends Request {
   user: UserResult;
@@ -20,10 +11,7 @@ export interface AuthenticatedRequest extends Request {
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -31,19 +19,18 @@ export class JwtAuthGuard implements CanActivate {
 
     if (!token) throw new UnauthorizedException("Token não fornecido");
 
-    let payload: SupabaseJwtPayload;
-    try {
-      payload = await this.jwtService.verifyAsync<SupabaseJwtPayload>(token, {
-        secret: process.env["SUPABASE_JWT_SECRET"],
-        ignoreExpiration: false,
-      });
-    } catch {
+    const supabase = getAdminClient();
+    const { data, error } = await supabase.auth.getUser(token);
+
+    if (error || !data.user) {
       throw new UnauthorizedException("Token inválido ou expirado");
     }
 
-    const user = await this.usersService.upsertBySupabaseId(payload.sub, {
-      email: payload.email,
-      name: payload.user_metadata?.name,
+    const { id, email, user_metadata } = data.user;
+
+    const user = await this.usersService.upsertBySupabaseId(id, {
+      email: email ?? "",
+      name: (user_metadata?.["name"] as string | undefined),
     });
 
     request.user = user;

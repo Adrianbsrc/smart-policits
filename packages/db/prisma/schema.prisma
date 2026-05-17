@@ -31,6 +31,14 @@ enum PartyIdeology {
   far_right
 }
 
+enum FeedItemType {
+  politician_spotlight
+  news
+  law_update
+  poll
+  generic
+}
+
 model User {
   id         String   @id @default(cuid())
   supabaseId String   @unique @map("supabase_id")
@@ -58,12 +66,12 @@ model Party {
   createdAt DateTime      @default(now()) @map("created_at")
   updatedAt DateTime      @updatedAt @map("updated_at")
 
-  candidates Candidate[]
+  politicians Politician[]
 
   @@map("parties")
 }
 
-model Candidate {
+model Politician {
   id        String   @id @default(cuid())
   tseId     String?  @unique @map("tse_id")
   name      String
@@ -76,27 +84,27 @@ model Candidate {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  party   Party?  @relation(fields: [partyId], references: [id])
-  score   Score?
-  follows Follow[]
-  alerts  Alert[]
+  party     Party?     @relation(fields: [partyId], references: [id])
+  score     Score?
+  follows   Follow[]
+  alerts    Alert[]
+  feedItems FeedItem[]
 
   @@index([office, state])
   @@index([slug])
-  @@map("candidates")
+  @@map("politicians")
 }
 
 model Score {
   id           String @id @default(cuid())
-  candidateId  String @unique @map("candidate_id")
+  politicianId String @unique @map("politician_id")
   overall      Float
-  // Dimensões principais — peso 2× no overall
-  education    Float @default(0)
-  health       Float @default(0)
-  security     Float @default(0)
-  economy      Float @default(0)
-  transparency Float @default(0)
-  // Dimensões complementares — peso 1× no overall
+
+  // ── Dimensões temáticas (0–10 cada) ─────────────────────────
+  education        Float @default(0)
+  health           Float @default(0)
+  security         Float @default(0)
+  economy          Float @default(0)
   environment      Float @default(0)
   infrastructure   Float @default(0)
   technology       Float @default(0)
@@ -105,23 +113,36 @@ model Score {
   culture          Float @default(0)
   socialRights     Float @default(0) @map("social_rights")
   entrepreneurship Float @default(0)
+
+  // ── Pilares estruturais (0–10 cada) ─────────────────────────
+  transparency   Float @default(0)
+  constitutional Float @default(0)
+  fiscal         Float @default(0)
+  activity       Float @default(0)
+
+  // ── Integridade ──────────────────────────────────────────────
+  integrityMultiplier Float @default(1.0) @map("integrity_multiplier")
+  penalties           Json  @default("[]")
+  breakdown           Json?
+
+  scoreVersion String   @default("2.0.0") @map("score_version")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  politician Politician @relation(fields: [politicianId], references: [id], onDelete: Cascade)
 
   @@map("scores")
 }
 
 model Follow {
-  id          String   @id @default(cuid())
-  userId      String   @map("user_id")
-  candidateId String   @map("candidate_id")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  politicianId String   @map("politician_id")
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  politician Politician @relation(fields: [politicianId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, candidateId])
+  @@unique([userId, politicianId])
   @@map("follows")
 }
 
@@ -143,18 +164,40 @@ enum AlertType {
 }
 
 model Alert {
-  id          String    @id @default(cuid())
-  userId      String    @map("user_id")
-  type        AlertType
-  title       String
-  body        String
-  candidateId String?   @map("candidate_id")
-  read        Boolean   @default(false)
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  type         AlertType
+  title        String
+  body         String
+  politicianId String?   @map("politician_id")
+  read         Boolean   @default(false)
+  createdAt    DateTime  @default(now()) @map("created_at")
 
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  candidate Candidate? @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  politician Politician? @relation(fields: [politicianId], references: [id], onDelete: SetNull)
 
   @@index([userId, read])
   @@map("alerts")
+}
+
+model FeedItem {
+  id           String       @id @default(cuid())
+  type         FeedItemType
+  title        String
+  summary      String?
+  imageUrl     String?      @map("image_url")
+  ctaLabel     String?      @map("cta_label")
+  ctaUrl       String?      @map("cta_url")
+  metadata     Json         @default("{}")
+  publishedAt  DateTime     @default(now()) @map("published_at")
+  expiresAt    DateTime?    @map("expires_at")
+  active       Boolean      @default(true)
+  politicianId String?      @map("politician_id")
+  politician   Politician?  @relation(fields: [politicianId], references: [id], onDelete: SetNull)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@index([type, active, publishedAt])
+  @@index([politicianId])
+  @@map("feed_items")
 }

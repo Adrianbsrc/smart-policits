@@ -13,8 +13,8 @@ export function useRanking(filters: RankingFilters = {}) {
   return useQuery({
     queryKey: RANKING_KEYS.list(filters),
     queryFn: () => rankingsService.list(filters),
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 15,
+    staleTime: 1000 * 60 * 30, // scores mudam apenas via ETL admin
+    gcTime: 1000 * 60 * 60,
     placeholderData: (prev) => prev,
   });
 }

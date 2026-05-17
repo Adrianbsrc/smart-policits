@@ -1,4 +1,7 @@
-export { candidatesService } from "./candidates.service";
+export { politiciansService, candidatesService } from "./politicians.service";
 export { rankingsService } from "./rankings.service";
 export { partiesService } from "./parties.service";
-export { politiciansService } from "./politicians.service";
+export { feedService } from "./feed.service";
+export { followsService } from "./follows.service";
+export { alertsService } from "./alerts.service";
+export { quizService } from "./quiz.service";

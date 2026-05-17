@@ -1,8 +1,8 @@
 export const ENDPOINTS = {
-  candidates: {
-    list: "/candidates",
-    detail: (slug: string) => `/candidates/${slug}`,
-    votacoes: (slug: string) => `/candidates/${slug}/camara/votacoes`,
+  politicians: {
+    list: "/politicians",
+    detail: (slug: string) => `/politicians/${slug}`,
+    votacoes: (slug: string) => `/politicians/${slug}/camara/votacoes`,
   },
   rankings: {
     list: "/rankings",
@@ -18,9 +18,9 @@ export const ENDPOINTS = {
   },
   follows: {
     list: "/follows",
-    follow: (candidateId: string) => `/follows/${candidateId}`,
-    unfollow: (candidateId: string) => `/follows/${candidateId}`,
-    status: (candidateId: string) => `/follows/${candidateId}/status`,
+    follow: (politicianId: string) => `/follows/${politicianId}`,
+    unfollow: (politicianId: string) => `/follows/${politicianId}`,
+    status: (politicianId: string) => `/follows/${politicianId}/status`,
   },
   quiz: {
     submit: "/quiz-results",
@@ -33,5 +33,10 @@ export const ENDPOINTS = {
     unreadCount: "/alerts/unread-count",
     markRead: (id: string) => `/alerts/${id}/read`,
     markAllRead: "/alerts/read-all",
+  },
+  feed: {
+    list: "/feed",
+    items: "/feed/items",
+    item: (id: string) => `/feed/items/${id}`,
   },
 } as const;

@@ -4,7 +4,7 @@ import { Office } from "@smart-politics/db";
 
 import { PaginationDto } from "../../../common/dto/pagination.dto";
 
-export class ListCandidatesDto extends PaginationDto {
+export class ListPoliticiansDto extends PaginationDto {
   @ApiPropertyOptional({ enum: Office })
   @IsOptional()
   @IsEnum(Office)

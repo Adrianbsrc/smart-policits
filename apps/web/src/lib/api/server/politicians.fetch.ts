@@ -12,7 +12,7 @@ async function fetchByOffice(
   if (options.state) params.set("state", options.state);
   if (options.search) params.set("search", options.search);
 
-  const res = await fetch(`${BASE_URL}/api${ENDPOINTS.candidates.list}?${params.toString()}`, {
+  const res = await fetch(`${BASE_URL}/api${ENDPOINTS.politicians.list}?${params.toString()}`, {
     next: { revalidate },
     headers: { "Content-Type": "application/json" },
   });

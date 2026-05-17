@@ -99,7 +99,7 @@ function MatchCard({ match, rank }: { match: QuizMatch; rank: number }) {
 
       <div className="mt-4 flex items-center justify-end">
         <Link
-          href={`/candidato/${match.slug}`}
+          href={`/perfil/${match.slug}`}
           className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80"
         >
           Ver perfil completo
@@ -202,7 +202,7 @@ export function QuizResultClient() {
         <h2 className="mb-4 text-xl font-bold text-foreground">Seus candidatos mais alinhados</h2>
         <div className="flex flex-col gap-4">
           {result.matches.slice(0, 5).map((match, i) => (
-            <MatchCard key={match.candidateId} match={match} rank={i + 1} />
+            <MatchCard key={match.politicianId} match={match} rank={i + 1} />
           ))}
         </div>
       </div>

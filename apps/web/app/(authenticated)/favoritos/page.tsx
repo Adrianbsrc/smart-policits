@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 
 import { EmptyState } from "@/components/common/empty-state";
-import { FollowButton } from "@/components/candidates/follow-button";
+import { FollowButton } from "@/components/politicians/follow-button";
 import { useFollows } from "@/hooks/use-follows";
 import { OFFICE_LABELS } from "@/lib/content/labels";
 
@@ -34,15 +34,15 @@ export default function FavoritosPage() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Favoritos</h1>
           <p className="mt-1 text-muted-foreground">
             {isEmpty
-              ? "Você ainda não segue nenhum candidato."
-              : `${follows.length} candidato${follows.length > 1 ? "s" : ""} acompanhado${follows.length > 1 ? "s" : ""}`}
+              ? "Você ainda não segue nenhum político."
+              : `${follows.length} político${follows.length > 1 ? "s" : ""} acompanhado${follows.length > 1 ? "s" : ""}`}
           </p>
         </div>
         <Link
           href="/ranking"
           className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          Explorar candidatos
+          Explorar políticos
         </Link>
       </div>
 
@@ -50,7 +50,7 @@ export default function FavoritosPage() {
         <EmptyState
           icon={<Heart className="h-6 w-6" />}
           title="Nenhum favorito ainda"
-          description="Explore o ranking e siga os candidatos que mais te interessam."
+          description="Explore o ranking e siga os políticos que mais te interessam."
           action={
             <Link
               href="/ranking"
@@ -65,26 +65,26 @@ export default function FavoritosPage() {
           {follows.map((f) => (
             <Link
               key={f.id}
-              href={`/candidato/${f.candidate.slug}`}
+              href={`/perfil/${f.politician.slug}`}
               className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-all hover:border-border-strong hover:shadow-md"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-                {f.candidate.name[0]}
+                {f.politician.name[0]}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                  {f.candidate.name}
+                  {f.politician.name}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {f.candidate.party?.acronym ?? "—"} · {office(f.candidate.office)}
-                  {f.candidate.state ? ` · ${f.candidate.state}` : ""}
+                  {f.politician.party?.acronym ?? "—"} · {office(f.politician.office)}
+                  {f.politician.state ? ` · ${f.politician.state}` : ""}
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                {f.candidate.score ? (
+                {f.politician.score ? (
                   <>
                     <p className="text-xl font-bold tabular-nums text-foreground">
-                      {f.candidate.score.overall.toFixed(1)}
+                      {f.politician.score.overall.toFixed(1)}
                     </p>
                     <p className="text-xs text-muted-foreground">/ 10</p>
                   </>
@@ -92,7 +92,7 @@ export default function FavoritosPage() {
                   <p className="text-xs text-muted-foreground">sem nota</p>
                 )}
               </div>
-              <FollowButton candidateId={f.candidate.id} variant="icon" />
+              <FollowButton candidateId={f.politician.id} variant="icon" />
             </Link>
           ))}
         </div>

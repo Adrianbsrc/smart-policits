@@ -20,27 +20,27 @@ export class FollowsController {
     return this.followsService.getMyFollows(user.id);
   }
 
-  @Post(":candidateId")
+  @Post(":politicianId")
   @UseGuards(JwtAuthGuard)
-  follow(@CurrentUser() user: UserResult, @Param("candidateId") candidateId: string) {
-    return this.followsService.follow(user.id, candidateId);
+  follow(@CurrentUser() user: UserResult, @Param("politicianId") politicianId: string) {
+    return this.followsService.follow(user.id, politicianId);
   }
 
-  @Delete(":candidateId")
+  @Delete(":politicianId")
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  unfollow(@CurrentUser() user: UserResult, @Param("candidateId") candidateId: string) {
-    return this.followsService.unfollow(user.id, candidateId);
+  unfollow(@CurrentUser() user: UserResult, @Param("politicianId") politicianId: string) {
+    return this.followsService.unfollow(user.id, politicianId);
   }
 
-  @Get(":candidateId/status")
+  @Get(":politicianId/status")
   @UseGuards(OptionalJwtAuthGuard)
   async checkFollow(
     @OptionalCurrentUser() user: UserResult | undefined,
-    @Param("candidateId") candidateId: string,
+    @Param("politicianId") politicianId: string,
   ) {
     if (!user) return { following: false };
-    const following = await this.followsService.isFollowing(user.id, candidateId);
+    const following = await this.followsService.isFollowing(user.id, politicianId);
     return { following };
   }
 }

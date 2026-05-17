@@ -1,12 +1,15 @@
 import { Module } from "@nestjs/common";
+import { CacheModule } from "@nestjs/cache-manager";
 import { ConfigModule } from "@nestjs/config";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerModule } from "@nestjs/throttler";
 
+import { CacheHeadersInterceptor } from "./common/interceptors/cache-headers.interceptor";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 import { PrismaModule } from "./config/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
-import { CandidatesModule } from "./modules/candidates/candidates.module";
+import { PoliticiansModule } from "./modules/politicians/politicians.module";
+import { FeedModule } from "./modules/feed/feed.module";
 import { AlertsModule } from "./modules/alerts/alerts.module";
 import { FollowsModule } from "./modules/follows/follows.module";
 import { HealthModule } from "./modules/health/health.module";
@@ -19,6 +22,13 @@ import { UsersModule } from "./modules/users/users.module";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    // In-memory cache: scores mudam apenas via ETL admin (1x/dia no máximo)
+    // TTL 15min + max 500 entradas cobre rankings e perfis sem Redis
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 15 * 60 * 1000, // 15 min em ms
+      max: 500,
+    }),
     ThrottlerModule.forRoot({
       throttlers: [
         { name: "default", ttl: 60_000, limit: 100 },
@@ -29,7 +39,8 @@ import { UsersModule } from "./modules/users/users.module";
     HealthModule,
     AuthModule,
     UsersModule,
-    CandidatesModule,
+    PoliticiansModule,
+    FeedModule,
     RankingsModule,
     PartiesModule,
     AlertsModule,
@@ -37,6 +48,9 @@ import { UsersModule } from "./modules/users/users.module";
     QuizModule,
     EtlModule,
   ],
-  providers: [{ provide: APP_INTERCEPTOR, useClass: LoggingInterceptor }],
+  providers: [
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: CacheHeadersInterceptor },
+  ],
 })
 export class AppModule {}

@@ -4,7 +4,7 @@ import { BarChart3 } from "lucide-react";
 const footerLinks = {
   produto: [
     { href: "/quiz", label: "Quiz Eleitoral" },
-    { href: "/ranking", label: "Ranking de Candidatos" },
+    { href: "/ranking", label: "Ranking de Políticos" },
     { href: "/cola-eleitoral", label: "Cola Eleitoral" },
     { href: "/blog", label: "Blog" },
   ],

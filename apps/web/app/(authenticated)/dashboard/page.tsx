@@ -152,21 +152,21 @@ export default function DashboardPage() {
               {follows.slice(0, 3).map((f) => (
                 <Link
                   key={f.id}
-                  href={`/candidato/${f.candidate.slug}`}
+                  href={`/perfil/${f.politician.slug}`}
                   className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted"
                 >
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                    {f.candidate.name[0]}
+                    {f.politician.name[0]}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">{f.candidate.name}</p>
+                    <p className="truncate text-sm font-medium text-foreground">{f.politician.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {f.candidate.party?.acronym ?? "—"} · {office(f.candidate.office)}
+                      {f.politician.party?.acronym ?? "—"} · {office(f.politician.office)}
                     </p>
                   </div>
-                  {f.candidate.score && (
+                  {f.politician.score && (
                     <span className="shrink-0 text-sm font-bold tabular-nums">
-                      {f.candidate.score.overall.toFixed(1)}
+                      {f.politician.score.overall.toFixed(1)}
                     </span>
                   )}
                 </Link>

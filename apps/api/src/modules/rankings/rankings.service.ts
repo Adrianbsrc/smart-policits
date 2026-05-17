@@ -9,7 +9,7 @@ import type { ListRankingsDto } from "./dto/list-rankings.dto";
 export class RankingsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private buildWhere(dto: ListRankingsDto): Prisma.CandidateWhereInput {
+  private buildWhere(dto: ListRankingsDto): Prisma.PoliticianWhereInput {
     return {
       score: { isNot: null },
       ...(dto.office && { office: dto.office }),
@@ -29,8 +29,8 @@ export class RankingsService {
     const skip = (page - 1) * limit;
     const where = this.buildWhere(dto);
 
-    const [candidates, total] = await Promise.all([
-      this.prisma.candidate.findMany({
+    const [politicians, total] = await Promise.all([
+      this.prisma.politician.findMany({
         where,
         select: {
           id: true,
@@ -48,6 +48,8 @@ export class RankingsService {
               security: true,
               economy: true,
               transparency: true,
+              integrityMultiplier: true,
+              activity: true,
             },
           },
         },
@@ -55,10 +57,10 @@ export class RankingsService {
         skip,
         take: limit,
       }),
-      this.prisma.candidate.count({ where }),
+      this.prisma.politician.count({ where }),
     ]);
 
-    const ranked = candidates.map((c, i) => ({ rank: skip + i + 1, ...c }));
+    const ranked = politicians.map((p, i) => ({ rank: skip + i + 1, ...p }));
     return paginate(ranked, total, page, limit);
   }
 }

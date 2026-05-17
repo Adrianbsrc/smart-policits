@@ -39,9 +39,9 @@ function AlertItem({ alert, onRead }: { alert: Alert; onRead: (id: string) => vo
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium leading-snug text-foreground">{alert.title}</p>
         <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{alert.body}</p>
-        {alert.candidate && (
+        {alert.politician && (
           <Link
-            href={`/candidato/${alert.candidate.slug}`}
+            href={`/perfil/${alert.politician.slug}`}
             className="mt-1 inline-block text-xs font-medium text-primary hover:text-primary/80"
             onClick={() => !alert.read && onRead(alert.id)}
           >

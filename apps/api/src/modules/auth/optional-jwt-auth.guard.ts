@@ -1,18 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
 import type { Request } from "express";
 
 import type { UserResult } from "../users/users.repository";
 import { UsersService } from "../users/users.service";
-
-interface SupabaseJwtPayload {
-  sub: string;
-  email: string;
-  user_metadata?: { name?: string; avatar_url?: string };
-  aud: string;
-  role: string;
-  exp: number;
-}
+import { getAdminClient } from "./supabase-admin";
 
 export interface MaybeAuthenticatedRequest extends Request {
   user?: UserResult;
@@ -20,10 +11,7 @@ export interface MaybeAuthenticatedRequest extends Request {
 
 @Injectable()
 export class OptionalJwtAuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<MaybeAuthenticatedRequest>();
@@ -31,22 +19,20 @@ export class OptionalJwtAuthGuard implements CanActivate {
 
     if (!token) return true;
 
-    let payload: SupabaseJwtPayload;
     try {
-      payload = await this.jwtService.verifyAsync<SupabaseJwtPayload>(token, {
-        secret: process.env["SUPABASE_JWT_SECRET"],
-        ignoreExpiration: false,
+      const { data, error } = await getAdminClient().auth.getUser(token);
+      if (error || !data.user) return true;
+
+      const { id, email, user_metadata } = data.user;
+      const user = await this.usersService.upsertBySupabaseId(id, {
+        email: email ?? "",
+        name: (user_metadata?.["name"] as string | undefined),
       });
+      request.user = user;
     } catch {
-      return true;
+      // optional — let the request through without a user
     }
 
-    const user = await this.usersService.upsertBySupabaseId(payload.sub, {
-      email: payload.email,
-      name: payload.user_metadata?.name,
-    });
-
-    request.user = user;
     return true;
   }
 

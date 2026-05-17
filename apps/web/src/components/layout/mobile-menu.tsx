@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/ranking", label: "Ranking" },
+  { href: "/feed", label: "Feed" },
   { href: "/quiz", label: "Quiz" },
   { href: "/comparar", label: "Comparar" },
   { href: "/metodologia", label: "Metodologia" },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -234,6 +234,14 @@ function ProfileSearchDropdown({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ColaEleitoralPage() {
+  return (
+    <Suspense>
+      <ColaEleitoralContent />
+    </Suspense>
+  );
+}
+
+function ColaEleitoralContent() {
   const searchParams   = useSearchParams();
   const previewRef     = useRef<HTMLDivElement>(null);
   const isAuthenticated = useIsAuthenticated();
@@ -278,10 +286,10 @@ export default function ColaEleitoralPage() {
     if (follows.length === 0) return;
     const update: Partial<GeneralMap> = {};
     for (const f of follows) {
-      const key = OFFICE_TO_GENERAL_KEY[f.candidate.office];
+      const key = OFFICE_TO_GENERAL_KEY[f.politician.office];
       if (key && !update[key]) {
-        const acronym = f.candidate.party?.acronym;
-        update[key] = acronym ? `${f.candidate.name} (${acronym})` : f.candidate.name;
+        const acronym = f.politician.party?.acronym;
+        update[key] = acronym ? `${f.politician.name} (${acronym})` : f.politician.name;
       }
     }
     setGeneral((prev) => ({ ...prev, ...update }));

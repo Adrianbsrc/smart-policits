@@ -1,36 +1,36 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 
-import { CandidatesService } from "../candidates/candidates.service";
-import type { FollowWithCandidate } from "./follows.repository";
+import { PoliticiansService } from "../politicians/politicians.service";
+import type { FollowWithPolitician } from "./follows.repository";
 import { FollowsRepository } from "./follows.repository";
 
 @Injectable()
 export class FollowsService {
   constructor(
     private readonly followsRepository: FollowsRepository,
-    private readonly candidatesService: CandidatesService,
+    private readonly politiciansService: PoliticiansService,
   ) {}
 
-  getMyFollows(userId: string): Promise<FollowWithCandidate[]> {
+  getMyFollows(userId: string): Promise<FollowWithPolitician[]> {
     return this.followsRepository.findByUser(userId);
   }
 
-  async follow(userId: string, candidateId: string): Promise<FollowWithCandidate> {
-    await this.candidatesService.findByIdOrThrow(candidateId);
+  async follow(userId: string, politicianId: string): Promise<FollowWithPolitician> {
+    await this.politiciansService.findByIdOrThrow(politicianId);
 
-    const existing = await this.followsRepository.findByUserAndCandidate(userId, candidateId);
-    if (existing) throw new ConflictException("Já está seguindo este candidato");
+    const existing = await this.followsRepository.findByUserAndPolitician(userId, politicianId);
+    if (existing) throw new ConflictException("Já está seguindo este político");
 
-    return this.followsRepository.create(userId, candidateId);
+    return this.followsRepository.create(userId, politicianId);
   }
 
-  async unfollow(userId: string, candidateId: string): Promise<void> {
-    const existing = await this.followsRepository.findByUserAndCandidate(userId, candidateId);
-    if (!existing) throw new NotFoundException("Não está seguindo este candidato");
-    await this.followsRepository.delete(userId, candidateId);
+  async unfollow(userId: string, politicianId: string): Promise<void> {
+    const existing = await this.followsRepository.findByUserAndPolitician(userId, politicianId);
+    if (!existing) throw new NotFoundException("Não está seguindo este político");
+    await this.followsRepository.delete(userId, politicianId);
   }
 
-  isFollowing(userId: string, candidateId: string): Promise<boolean> {
-    return this.followsRepository.isFollowing(userId, candidateId);
+  isFollowing(userId: string, politicianId: string): Promise<boolean> {
+    return this.followsRepository.isFollowing(userId, politicianId);
   }
 }

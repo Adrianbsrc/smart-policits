@@ -1,12 +1,51 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import type { PartyIdeology, Prisma } from "@smart-politics/db";
-import { calculateScoreFromMock } from "@smart-politics/scoring";
+import {
+  calculateScore,
+  calculateScoreFromMock,
+  type PoliticalRole,
+  type RawScoreInput,
+  type IntegrityInput,
+  type TransparencyInput,
+  type FiscalInput,
+  type ConstitutionalInput,
+  type ThematicInput,
+} from "@smart-politics/scoring";
 
 import { PrismaService } from "../../config/prisma.service";
 import { CamaraApiService } from "./camara-api.service";
 
 const CAMARA_BASE = "https://dadosabertos.camara.leg.br/api/v2";
 const LEGISLATURA = 57;
+
+// ─── Score neutros (usados quando dados reais não estão disponíveis) ──────────
+// Neutro ≠ zero: evita penalizar por ausência de dados.
+
+const NEUTRAL_INTEGRITY: IntegrityInput = {
+  criminalConvictions: 0, criminalCharges: 0, tcuConvictions: 0,
+  tcuPendingInvestigations: 0, ethicsViolations: 0,
+  mandateCancelledPrevious: false, fichaLimpaIneligible: false,
+  mpChargesAccepted: 0, patrimonyInconsistencyPercent: 0,
+  provenFalseDeclarations: 0,
+};
+
+const NEUTRAL_FISCAL: FiscalInput = {
+  budgetBalanceScore: 5, publicDebtDelta: 0,
+  tcuAuditScore: 5, expenseEfficiencyScore: 5,
+};
+
+const NEUTRAL_CONSTITUTIONAL: ConstitutionalInput = {
+  fundamentalRightsScore: 5, powerSeparationScore: 5,
+  legalityScore: 5, institutionalCoherenceScore: 5,
+};
+
+const NEUTRAL_THEMATIC: ThematicInput = {
+  education: 50, health: 50, security: 50, economy: 50,
+  environment: 50, infrastructure: 50, technology: 50,
+  agriculture: 50, international: 50, culture: 50,
+  socialRights: 50, entrepreneurship: 50,
+};
 
 interface CamaraDeputado {
   id: number;
@@ -106,6 +145,14 @@ interface SeedPolitician {
   party: string;
 }
 
+const OFFICE_TO_ROLE: Record<string, PoliticalRole> = {
+  president:      "president",
+  governor:       "governor",
+  senator:        "senator",
+  federal_deputy: "federal_deputy",
+  state_deputy:   "state_deputy",
+};
+
 /** Brazilian governors — 2023-2027 mandate */
 const GOVERNORS_SEED: SeedPolitician[] = [
   { tseId: "gov-ac", name: "Gladson Cameli",             office: "governor", state: "AC", party: "PP" },
@@ -153,6 +200,7 @@ export class EtlService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly camaraApiService: CamaraApiService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
 
   // ─── Shared helpers ─────────────────────────────────────────────────────────
@@ -180,7 +228,7 @@ export class EtlService {
     seed: SeedPolitician,
     partyId: string,
   ): Promise<void> {
-    const candidate = await this.prisma.candidate.upsert({
+    const politician = await this.prisma.politician.upsert({
       where: { tseId: seed.tseId },
       update: { name: seed.name, state: seed.state ?? null, partyId },
       create: {
@@ -193,11 +241,17 @@ export class EtlService {
       },
     });
     const scoreNum = seed.tseId.split("-").reduce((acc, part) => acc + part.charCodeAt(0), 0);
-    const scores   = calculateScoreFromMock(scoreNum % 100_000);
+    const role     = OFFICE_TO_ROLE[seed.office] ?? "federal_deputy";
+    const { breakdown, penalties, ...scoreFields } = calculateScoreFromMock(scoreNum % 100_000, role);
+    const jsonScores = {
+      ...scoreFields,
+      breakdown: breakdown as unknown as Prisma.InputJsonValue,
+      penalties: penalties as unknown as Prisma.InputJsonValue,
+    };
     await this.prisma.score.upsert({
-      where:  { candidateId: candidate.id },
-      update: scores,
-      create: { candidateId: candidate.id, ...scores },
+      where:  { politicianId: politician.id },
+      update: jsonScores,
+      create: { politicianId: politician.id, ...jsonScores },
     });
   }
 
@@ -215,6 +269,8 @@ export class EtlService {
       synced++;
     }
     this.logger.log(`Governors sync complete: ${synced} synced, ${skipped} skipped`);
+    // Invalida o cache após sync para que novas queries reflitam os scores atualizados
+    await (this.cache as unknown as { reset(): Promise<void> }).reset();
     return { synced, skipped };
   }
 
@@ -232,6 +288,8 @@ export class EtlService {
       synced++;
     }
     this.logger.log(`Presidents sync complete: ${synced} synced, ${skipped} skipped`);
+    // Invalida o cache após sync para que novas queries reflitam os scores atualizados
+    await (this.cache as unknown as { reset(): Promise<void> }).reset();
     return { synced, skipped };
   }
 
@@ -270,7 +328,7 @@ export class EtlService {
       const name = toTitleCase(dep.nome);
       const slug = slugify(dep.nome);
 
-      const candidate = await this.prisma.candidate.upsert({
+      const politician = await this.prisma.politician.upsert({
         where: { tseId: String(dep.id) },
         update: { name, slug, photoUrl: dep.urlFoto, state: dep.siglaUf, partyId },
         create: {
@@ -284,17 +342,66 @@ export class EtlService {
         },
       });
 
-      const scores = calculateScoreFromMock(dep.id);
+      // Busca dados reais da Câmara API com fallback para mock se falhar
+      let scoreInput: RawScoreInput | null = null;
+      try {
+        const [votacoes, proposicoes, publicouDespesas] = await Promise.all([
+          this.camaraApiService.getVotacoes(String(dep.id)),
+          this.camaraApiService.getProposicoes(String(dep.id)),
+          this.camaraApiService.getPublicouDespesas(String(dep.id)),
+        ]);
+
+        const presenceVotos = votacoes.filter(
+          (v) => ["Sim", "Não", "Abstenção", "Obstrução"].includes(v.tipoVoto),
+        ).length;
+
+        scoreInput = {
+          role: "federal_deputy",
+          integrity: NEUTRAL_INTEGRITY,
+          transparency: {
+            cguTransparencyScore: 5,
+            patrimonyDeclared: true,
+            spendingPublishedRate: publicouDespesas ? 90 : 30,
+            publicMeetingsRate: 50,
+            openDataCompliance: 5,
+          },
+          legislative: {
+            presenceRate: Math.min(100, Math.round((presenceVotos / 150) * 100)),
+            billsProposed: proposicoes.proposed,
+            billsApproved: proposicoes.approved,
+            committeeParticipation: 50,
+            discourseVoteConsistency: 50,
+          },
+          fiscal: NEUTRAL_FISCAL,
+          constitutional: NEUTRAL_CONSTITUTIONAL,
+          thematic: NEUTRAL_THEMATIC,
+        };
+      } catch {
+        this.logger.warn(`Câmara API failed for deputado ${dep.id} — using mock score`);
+      }
+
+      const scoreResult = scoreInput
+        ? calculateScore(scoreInput)
+        : calculateScoreFromMock(dep.id, "federal_deputy");
+
+      const { breakdown, penalties, ...scoreFields } = scoreResult;
+      const jsonScores = {
+        ...scoreFields,
+        breakdown: breakdown as unknown as Prisma.InputJsonValue,
+        penalties: penalties as unknown as Prisma.InputJsonValue,
+      };
       await this.prisma.score.upsert({
-        where: { candidateId: candidate.id },
-        update: scores,
-        create: { candidateId: candidate.id, ...scores },
+        where: { politicianId: politician.id },
+        update: jsonScores,
+        create: { politicianId: politician.id, ...jsonScores },
       });
 
       synced++;
     }
 
     this.logger.log(`Sync complete: ${synced} synced, ${skipped} skipped`);
+    // Invalida o cache após sync para que novas queries reflitam os scores atualizados
+    await (this.cache as unknown as { reset(): Promise<void> }).reset();
     return { synced, skipped };
   }
 }

@@ -10,15 +10,14 @@ export interface PaginatedResponse<T> {
   };
 }
 
-export interface CandidateScore {
+export interface PoliticianScore {
   overall: number;
-  // Main dimensions — weight 2×
+  // Thematic dimensions
   education: number;
   health: number;
   security: number;
   economy: number;
   transparency: number;
-  // Extended dimensions — weight 1×
   environment: number;
   infrastructure: number;
   technology: number;
@@ -27,7 +26,37 @@ export interface CandidateScore {
   culture: number;
   socialRights: number;
   entrepreneurship: number;
+  // Structural pillars (score 2.0)
+  activity: number;
+  fiscal: number;
+  constitutional: number;
+  // Integrity
+  integrityMultiplier: number;
+  penalties: PenaltyRecord[];
+  breakdown: ScoreBreakdown | null;
+  scoreVersion: string;
 }
+
+export interface PenaltyRecord {
+  reason: string;
+  penalty: number;
+  source: string;
+}
+
+export interface ScoreBreakdown {
+  baseScore: number;
+  transparency: number;
+  activity: number;
+  fiscal: number;
+  constitutional: number;
+  thematic: number;
+  presenceRate?: number;
+  billsProposed?: number;
+  billsApproved?: number;
+}
+
+// Legacy alias for backward compat within this session
+export type CandidateScore = PoliticianScore;
 
 export interface CamaraVoto {
   id: string;
@@ -46,7 +75,7 @@ export interface PartyMini {
   logoUrl: string | null;
 }
 
-export interface CandidateListItem {
+export interface PoliticianListItem {
   id: string;
   name: string;
   slug: string;
@@ -54,17 +83,23 @@ export interface CandidateListItem {
   state: string | null;
   photoUrl: string | null;
   party: PartyMini | null;
-  score: CandidateScore | null;
+  score: PoliticianScore | null;
 }
 
-export interface CandidateDetail extends CandidateListItem {
+// Legacy alias
+export type CandidateListItem = PoliticianListItem;
+
+export interface PoliticianDetail extends PoliticianListItem {
   bio: string | null;
   tseId: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface RankedCandidate {
+// Legacy alias
+export type CandidateDetail = PoliticianDetail;
+
+export interface RankedPolitician {
   rank: number;
   id: string;
   name: string;
@@ -73,8 +108,11 @@ export interface RankedCandidate {
   state: string | null;
   photoUrl: string | null;
   party: { name: string; acronym: string; colorHex: string } | null;
-  score: CandidateScore | null;
+  score: PoliticianScore | null;
 }
+
+// Legacy alias
+export type RankedCandidate = RankedPolitician;
 
 export interface Party {
   id: string;
@@ -83,10 +121,10 @@ export interface Party {
   colorHex: string;
   logoUrl: string | null;
   ideology: string;
-  _count: { candidates: number };
+  _count: { politicians: number };
 }
 
-export interface CandidateListFilters {
+export interface PoliticianListFilters {
   office?: string;
   state?: string;
   party?: string;
@@ -94,6 +132,9 @@ export interface CandidateListFilters {
   page?: number;
   limit?: number;
 }
+
+// Legacy alias
+export type CandidateListFilters = PoliticianListFilters;
 
 export interface RankingFilters {
   office?: string;
@@ -119,11 +160,11 @@ export interface CurrentUser {
 
 // --- Follows ---
 
-export interface FollowedCandidate {
+export interface FollowedPolitician {
   id: string;
-  candidateId: string;
+  politicianId: string;
   createdAt: string;
-  candidate: {
+  politician: {
     id: string;
     name: string;
     slug: string;
@@ -131,9 +172,12 @@ export interface FollowedCandidate {
     state: string | null;
     photoUrl: string | null;
     party: { name: string; acronym: string; colorHex: string } | null;
-    score: CandidateScore | null;
+    score: PoliticianScore | null;
   };
 }
+
+// Legacy alias
+export type FollowedCandidate = FollowedPolitician;
 
 export interface FollowStatus {
   following: boolean;
@@ -158,7 +202,7 @@ export interface DimensionWeights {
 }
 
 export interface QuizMatch {
-  candidateId: string;
+  politicianId: string;
   name: string;
   slug: string;
   office: string;
@@ -167,6 +211,9 @@ export interface QuizMatch {
   score: number;
   matchPercent: number;
 }
+
+// Legacy alias for old candidateId field
+export type CandidateQuizMatch = QuizMatch & { candidateId?: string };
 
 export interface QuizResult {
   id: string | null;
@@ -186,10 +233,58 @@ export interface Alert {
   body: string;
   read: boolean;
   createdAt: string;
-  candidate: {
+  politician: {
     id: string;
     name: string;
     slug: string;
     photoUrl: string | null;
   } | null;
+}
+
+// --- Feed ---
+
+export type FeedItemType = "politician_spotlight" | "news" | "law_update" | "poll" | "generic";
+
+export interface FeedItemMetadata {
+  // politician_spotlight
+  overall?: number;
+  integrityMultiplier?: number;
+  penalties?: PenaltyRecord[];
+  topDimension?: string;
+  worstDimension?: string;
+  office?: string;
+  partyAcronym?: string | null;
+  partyColorHex?: string | null;
+  matchPercent?: number;
+  // news
+  source?: string;
+  url?: string;
+  tags?: string[];
+  // law_update
+  billId?: string;
+  billTitle?: string;
+  votesFor?: number;
+  votesAgainst?: number;
+  totalVotes?: number;
+  status?: string;
+  // poll
+  question?: string;
+  options?: { label: string; votes: number }[];
+  // generic
+  color?: string;
+  icon?: string;
+}
+
+export interface FeedItem {
+  id: string;
+  type: FeedItemType;
+  title: string;
+  summary: string | null;
+  imageUrl: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  metadata: FeedItemMetadata;
+  publishedAt: string;
+  politicianId: string | null;
+  politician: { name: string; slug: string; photoUrl: string | null } | null;
 }

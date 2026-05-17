@@ -10,7 +10,7 @@ const partySelect = {
   colorHex: true,
   logoUrl: true,
   ideology: true,
-  _count: { select: { candidates: true } },
+  _count: { select: { politicians: true } },
 } as const satisfies Prisma.PartySelect;
 
 export type PartyResult = Prisma.PartyGetPayload<{ select: typeof partySelect }>;

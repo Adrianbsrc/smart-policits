@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { CandidateComparisonClient } from "@/components/candidates/candidate-comparison-client";
+import { PoliticianComparisonClient } from "@/components/politicians/politician-comparison-client";
 
 export const metadata: Metadata = {
   title: "Comparar Políticos",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function CompararPage() {
   return (
     <Suspense fallback={null}>
-      <CandidateComparisonClient />
+      <PoliticianComparisonClient />
     </Suspense>
   );
 }
