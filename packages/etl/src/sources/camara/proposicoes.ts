@@ -29,19 +29,20 @@ export interface ProposicoesResult {
 export async function fetchProposicoesDeputado(
   deputadoId: number,
 ): Promise<ProposicoesResult> {
-  const baseUrl = `${CAMARA_BASE}/proposicoes?idAutor=${deputadoId}&itens=100&ordem=DESC&ordenarPor=id`;
-
-  const [allData, approvedData] = await Promise.all([
-    fetchJson<CamaraListResponse<CamaraProposicao>>(baseUrl),
-    fetchJson<CamaraListResponse<CamaraProposicao>>(
-      `${CAMARA_BASE}/proposicoes?idAutor=${deputadoId}&codSituacao=1140&itens=50`,
-    ),
-  ]);
-
-  const hasMore = allData.links.some((l) => l.rel === "next");
-
-  return {
-    proposed: hasMore ? 100 : allData.dados.length,
-    approved: approvedData.dados.length,
-  };
+  try {
+    const baseUrl = `${CAMARA_BASE}/proposicoes?idAutor=${deputadoId}&itens=100&ordem=DESC&ordenarPor=id`;
+    const [allData, approvedData] = await Promise.all([
+      fetchJson<CamaraListResponse<CamaraProposicao>>(baseUrl),
+      fetchJson<CamaraListResponse<CamaraProposicao>>(
+        `${CAMARA_BASE}/proposicoes?idAutor=${deputadoId}&codSituacao=1140&itens=50`,
+      ),
+    ]);
+    const hasMore = allData.links.some((l) => l.rel === "next");
+    return {
+      proposed: hasMore ? 100 : allData.dados.length,
+      approved: approvedData.dados.length,
+    };
+  } catch {
+    return { proposed: 0, approved: 0 };
+  }
 }

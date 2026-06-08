@@ -15,9 +15,14 @@ import { FollowsModule } from "./modules/follows/follows.module";
 import { HealthModule } from "./modules/health/health.module";
 import { PartiesModule } from "./modules/parties/parties.module";
 import { EtlModule } from "./modules/etl/etl.module";
+import { IntelligenceModule } from "./modules/intelligence/intelligence.module";
 import { QuizModule } from "./modules/quiz/quiz.module";
 import { RankingsModule } from "./modules/rankings/rankings.module";
 import { UsersModule } from "./modules/users/users.module";
+import { TimelineModule } from "./modules/timeline/timeline.module";
+import { PromisesModule } from "./modules/promises/promises.module";
+import { ExpensesModule } from "./modules/expenses/expenses.module";
+import { AssetsModule } from "./modules/assets/assets.module";
 
 @Module({
   imports: [
@@ -47,6 +52,11 @@ import { UsersModule } from "./modules/users/users.module";
     FollowsModule,
     QuizModule,
     EtlModule,
+    IntelligenceModule,
+    TimelineModule,
+    PromisesModule,
+    ExpensesModule,
+    AssetsModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },

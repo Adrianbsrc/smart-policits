@@ -26,7 +26,11 @@ async function fetchJson<T>(url: string): Promise<T> {
  * de baixa transparência, não de ausência de gastos.
  */
 export async function fetchPublicouDespesas(deputadoId: number): Promise<boolean> {
-  const url = `${CAMARA_BASE}/deputados/${deputadoId}/despesas?itens=1&ordem=DESC&ordenarPor=ano`;
-  const data = await fetchJson<CamaraListResponse<CamaraDespesa>>(url);
-  return data.dados.length > 0;
+  try {
+    const url = `${CAMARA_BASE}/deputados/${deputadoId}/despesas?itens=1&ordem=DESC&ordenarPor=ano`;
+    const data = await fetchJson<CamaraListResponse<CamaraDespesa>>(url);
+    return data.dados.length > 0;
+  } catch {
+    return false;
+  }
 }

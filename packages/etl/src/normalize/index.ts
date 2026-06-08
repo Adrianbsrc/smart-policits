@@ -1,5 +1,2 @@
 export * from "./camara";
-
-export function normalizeText(text: string): string {
-  return text.trim().replace(/\s+/g, " ");
-}
+export * from "./senado";

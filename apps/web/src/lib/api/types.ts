@@ -10,8 +10,11 @@ export interface PaginatedResponse<T> {
   };
 }
 
+export type ScoreType = "mock" | "partial" | "real";
+
 export interface PoliticianScore {
   overall: number;
+  scoreType: ScoreType;
   // Thematic dimensions
   education: number;
   health: number;
@@ -82,6 +85,8 @@ export interface PoliticianListItem {
   office: string;
   state: string | null;
   photoUrl: string | null;
+  fichaLimpaIneligible: boolean;
+  candidateNumber: number | null;
   party: PartyMini | null;
   score: PoliticianScore | null;
 }
@@ -107,6 +112,9 @@ export interface RankedPolitician {
   office: string;
   state: string | null;
   photoUrl: string | null;
+  fichaLimpaIneligible: boolean;
+  candidateNumber: number | null;
+  mandateCount: number | null;
   party: { name: string; acronym: string; colorHex: string } | null;
   score: PoliticianScore | null;
 }
@@ -137,10 +145,21 @@ export interface PoliticianListFilters {
 export type CandidateListFilters = PoliticianListFilters;
 
 export interface RankingFilters {
-  office?: string;
-  state?: string;
-  party?: string;
+  /** Suporta um ou múltiplos cargos */
+  office?: string | string[];
+  state?: string | string[];
+  party?: string | string[];
   search?: string;
+  fichaLimpa?: boolean;
+  /** Estreante: 1º mandato */
+  estreante?: boolean;
+  /** Reeleito: 2+ mandatos */
+  reeleito?: boolean;
+  /** Veterano: 3+ mandatos */
+  veterano?: boolean;
+  /** Pré-candidato 2026 */
+  preCandidate?: boolean;
+  sortBy?: "overall" | "transparency" | "activity" | "constitutional" | "integrityMultiplier";
   page?: number;
   limit?: number;
 }
@@ -239,6 +258,93 @@ export interface Alert {
     slug: string;
     photoUrl: string | null;
   } | null;
+}
+
+// --- Timeline / PoliticalEvents ---
+
+export type PoliticalEventType =
+  | "vote"
+  | "bill_proposed"
+  | "bill_approved"
+  | "investigation"
+  | "decree"
+  | "public_expense"
+  | "statement";
+
+export interface PoliticalEventEvidence {
+  dimension: string;
+  explanation: string;
+  deltaValue: number;
+}
+
+export interface PoliticalEvent {
+  id: string;
+  type: PoliticalEventType;
+  title: string;
+  description: string;
+  eventDate: string;
+  sourceUrl: string | null;
+  sourceLabel: string | null;
+  topics: string[];
+  sentiment: number;
+  impact: number;
+  metadata: Record<string, unknown>;
+  evidences: PoliticalEventEvidence[];
+}
+
+// --- Score History ---
+
+export interface ScoreHistoryPoint {
+  id: string;
+  overall: number;
+  activity: number;
+  transparency: number;
+  fiscal: number;
+  constitutional: number;
+  integrityMultiplier: number;
+  scoreType: string;
+  trigger: string;
+  snapshotAt: string;
+}
+
+// --- Score Evidence ---
+
+export interface ScoreEvidence {
+  id: string;
+  dimension: string;
+  explanation: string;
+  deltaValue: number;
+  createdAt: string;
+  event: {
+    id: string;
+    title: string;
+    eventDate: string;
+    type: PoliticalEventType;
+    sourceUrl: string | null;
+  } | null;
+}
+
+// --- Expenses ---
+
+export type ExpenseCategory = "travel" | "office" | "fuel" | "consultancy" | "publicity" | "other";
+
+export interface PublicExpense {
+  id: string;
+  category: ExpenseCategory;
+  description: string;
+  amountBrl: number;
+  expenseDate: string;
+  supplier: string | null;
+  documentUrl: string | null;
+  year: number;
+  month: number;
+  createdAt: string;
+}
+
+export interface ExpenseSummary {
+  year: number;
+  totalBrl: number;
+  byCategory: { category: string; totalBrl: number; count: number }[];
 }
 
 // --- Feed ---

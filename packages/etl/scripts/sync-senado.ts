@@ -1,10 +1,10 @@
 /**
- * Sync senators from Senado Federal API into the database.
+ * Sync senators from Senado Federal API.
  *
  * Usage:
  *   pnpm --filter @smart-politics/etl sync:senado
  *
- * DATABASE_URL is loaded from the monorepo root .env (or the etl package .env as fallback).
+ * DATABASE_URL is loaded from the monorepo root .env.
  */
 import * as dotenv from "dotenv";
 import { resolve } from "path";
@@ -14,7 +14,6 @@ dotenv.config();
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@smart-politics/db";
-
 import { syncSenadoSenadores } from "../src/sync/senado";
 
 async function main() {
@@ -25,7 +24,8 @@ async function main() {
   const prisma = new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
 
   try {
-    await syncSenadoSenadores(prisma as unknown as import("@smart-politics/db").PrismaClient);
+    const result = await syncSenadoSenadores(prisma as never);
+    console.log(`\nResultado: ${result.synced} sincronizados, ${result.skipped} ignorados`);
   } finally {
     await prisma.$disconnect();
   }

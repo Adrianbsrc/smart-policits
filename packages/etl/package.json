@@ -2,12 +2,24 @@
   "name": "@smart-politics/etl",
   "version": "0.1.0",
   "private": true,
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
-    "sync:camara": "tsx scripts/sync-camara.ts",
-    "sync:senado": "tsx scripts/sync-senado.ts",
+    "build": "tsc",
+    "sync:camara":         "tsx scripts/sync-camara.ts",
+    "sync:senado":         "tsx scripts/sync-senado.ts",
+    "sync:governors":      "tsx scripts/sync-governors.ts",
+    "sync:presidents":     "tsx scripts/sync-presidents.ts",
+    "sync:curated-scores": "tsx scripts/sync-curated-scores.ts",
+    "sync:tse-bens":       "tsx scripts/sync-tse-bens.ts",
+    "sync:cnj-integrity":  "tsx scripts/sync-cnj-integrity.ts",
+    "sync:all":            "tsx scripts/sync-all.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

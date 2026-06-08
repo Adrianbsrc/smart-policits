@@ -2,10 +2,16 @@
   "name": "@smart-politics/scoring",
   "version": "0.1.0",
   "private": true,
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "exports": {
-    ".": "./index.ts"
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
   },
   "scripts": {
+    "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

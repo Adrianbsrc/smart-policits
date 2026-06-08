@@ -25,6 +25,8 @@
     "@prisma/adapter-pg": "^7.8.0",
     "@smart-politics/core": "workspace:*",
     "@smart-politics/db": "workspace:*",
+    "@smart-politics/etl": "workspace:*",
+    "@smart-politics/intelligence": "workspace:*",
     "@smart-politics/scoring": "workspace:*",
     "@smart-politics/types": "workspace:*",
     "@supabase/supabase-js": "^2.104.1",

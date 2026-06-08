@@ -3,6 +3,11 @@ export const ENDPOINTS = {
     list: "/politicians",
     detail: (slug: string) => `/politicians/${slug}`,
     votacoes: (slug: string) => `/politicians/${slug}/camara/votacoes`,
+    timeline: (slug: string) => `/politicians/${slug}/timeline`,
+    scoreHistory: (slug: string) => `/politicians/${slug}/score-history`,
+    scoreEvidence: (slug: string) => `/politicians/${slug}/score-evidence`,
+    expenses: (slug: string) => `/politicians/${slug}/expenses`,
+    expensesSummary: (slug: string) => `/politicians/${slug}/expenses/summary`,
   },
   rankings: {
     list: "/rankings",

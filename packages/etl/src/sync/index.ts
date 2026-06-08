@@ -1,8 +1,8 @@
 export * from "./camara";
+export * from "./senado";
+export * from "./governors";
 
 export interface SyncResult {
-  inserted: number;
-  updated: number;
+  synced: number;
   skipped: number;
-  errors: string[];
 }

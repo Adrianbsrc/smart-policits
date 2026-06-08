@@ -1,138 +1,248 @@
 import Link from "next/link";
-import Image from "next/image";
+import { ShieldCheck, GitCompare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ScoreBar } from "@/components/ui/score-bar";
-import { Badge } from "@/components/ui/badge";
-import { OFFICE_LABELS, SCORE_LABELS } from "@/lib/content/labels";
-import type { RankedPolitician } from "@/lib/api/types";
+import { OFFICE_LABELS } from "@/lib/content/labels";
+import { GlassCard } from "@/components/ui/glass-card";
+import { ScoreRing } from "@/components/ui/score-ring";
+import { LiqPill } from "@/components/ui/liq-pill";
+import { PoliticianAvatar } from "@/components/politicians/politician-avatar";
+import type { RankedPolitician, PoliticianScore } from "@/lib/api/types";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface PoliticianCardProps {
   candidate: RankedPolitician;
   className?: string;
 }
 
-export function PoliticianCard({ candidate, className }: PoliticianCardProps) {
-  const { rank, name, slug, office, state, photoUrl, party, score } = candidate;
+// ─── Pillar config ────────────────────────────────────────────────────────────
 
-  const rankStyle =
-    rank === 1
-      ? "bg-warning/20 text-warning"
-      : rank === 2 || rank === 3
-        ? "bg-muted text-foreground/70"
-        : "bg-muted text-muted-foreground";
+const PILLARS = [
+  { key: "transparencia" as const, label: "Transparência"  },
+  { key: "presenca"      as const, label: "Presença"       },
+  { key: "coerencia"     as const, label: "Coerência"      },
+  { key: "integridade"   as const, label: "Integridade"    },
+  { key: "produtividade" as const, label: "Produtividade"  },
+] as const;
+
+type PillarKey = (typeof PILLARS)[number]["key"];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getPillars(score: PoliticianScore): Record<PillarKey, number> {
+  const bd = score.breakdown;
+  return {
+    transparencia: bd?.transparency    ?? score.transparency    ?? 0,
+    presenca:      bd?.activity        ?? score.activity        ?? 0,
+    coerencia:     bd?.constitutional  ?? score.constitutional  ?? 0,
+    integridade:   Math.min(10, score.integrityMultiplier * 10),
+    produtividade: bd?.thematic        ?? 0,
+  };
+}
+
+function pillarBarColor(value: number): string {
+  if (value >= 8) return "bg-primary";
+  if (value >= 6) return "bg-foreground/60";
+  return "bg-destructive/70";
+}
+
+// ─── PoliticianCard ───────────────────────────────────────────────────────────
+
+export function PoliticianCard({ candidate, className }: PoliticianCardProps) {
+  const { rank, name, slug, office, state, photoUrl, party, score, fichaLimpaIneligible } = candidate;
+
+  // Score zero para dados mock/indisponível — regra de negócio
+  const isMock     = !score || score.scoreType === "mock";
+  const overall    = isMock ? null : score.overall;
+  const fichaLimpa = !fichaLimpaIneligible;
+  const pillars    = !isMock && score ? getPillars(score) : null;
+  const rankLabel  = String(rank).padStart(2, "0");
+  const isTop3     = rank <= 3;
 
   return (
-    <Link
-      href={`/perfil/${slug}`}
+    <GlassCard
       className={cn(
-        "group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-all duration-200 hover:border-border-strong hover:shadow-md",
+        "flex items-start gap-3 px-4 py-4 transition-all duration-200 hover:shadow-lg",
         className,
       )}
-      aria-label={`Ver perfil de ${name}`}
     >
-      <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold", rankStyle)}>
-        {rank}
+      {/* Posição */}
+      <span
+        className={cn(
+          "mt-1 w-8 shrink-0 text-center font-display text-xl font-extrabold tabular-nums tracking-tight",
+          isTop3 ? "text-primary" : "text-muted-foreground/40",
+        )}
+      >
+        {rankLabel}
       </span>
 
-      <PoliticianAvatar name={name} photoUrl={photoUrl} />
+      {/* Avatar */}
+      <div className="mt-0.5 shrink-0">
+        <PoliticianAvatar
+          name={name}
+          photoUrl={photoUrl}
+          size="md"
+          ring={isTop3}
+        />
+      </div>
 
+      {/* Info + pillar bars */}
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-foreground transition-colors group-hover:text-primary">{name}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {party && (
-            <span
-              className="mr-1.5 inline-block rounded px-1 py-0.5 text-[10px] font-bold text-white"
-              style={{ backgroundColor: party.colorHex }}
-            >
-              {party.acronym}
-            </span>
+        {/* Nome + badge */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Link
+            href={`/perfil/${slug}`}
+            className="font-semibold leading-tight text-foreground transition-colors hover:text-primary"
+          >
+            {name}
+          </Link>
+          {fichaLimpa && (
+            <LiqPill tone="good">
+              <ShieldCheck className="h-2.5 w-2.5" />
+              Ficha Limpa
+            </LiqPill>
           )}
+        </div>
+
+        {/* Cargo / Partido / Estado */}
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {OFFICE_LABELS[office] ?? office}
+          {party && ` · ${party.acronym}`}
           {state && ` · ${state}`}
         </p>
-        {score && (
-          <div className="mt-2 hidden gap-3 sm:flex">
-            {(["education", "health", "security", "economy", "transparency"] as const).map((key) => (
-              <div key={key} className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground">{SCORE_LABELS[key]}</span>
-                <span className="text-xs font-medium tabular-nums text-foreground">{score[key].toFixed(1)}</span>
-              </div>
-            ))}
+
+        {/* Barras dos pilares — apenas desktop, apenas dados reais */}
+        {pillars && (
+          <div className="mt-2.5 hidden flex-col gap-1.5 lg:flex">
+            {PILLARS.map(({ key, label }) => {
+              const value = pillars[key];
+              const pct   = (Math.min(10, value) / 10) * 100;
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <span className="w-24 shrink-0 text-[10px] text-muted-foreground">
+                    {label}
+                  </span>
+                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={cn("h-full rounded-full transition-all duration-300", pillarBarColor(value))}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="w-7 shrink-0 text-right text-[10px] font-semibold tabular-nums text-foreground">
+                    {value.toFixed(1)}
+                  </span>
+                </div>
+              );
+            })}
           </div>
+        )}
+
+        {isMock && (
+          <p className="mt-1 text-[10px] text-muted-foreground/50">
+            dados ainda não disponíveis
+          </p>
         )}
       </div>
 
-      <div className="shrink-0 text-right">
-        <p className="text-2xl font-bold tabular-nums text-foreground">
-          {score?.overall.toFixed(1) ?? "—"}
-        </p>
-        <p className="text-xs text-muted-foreground">/ 10</p>
+      {/* Score ring + ações */}
+      <div className="flex shrink-0 flex-col items-center gap-3">
+        <ScoreRing value={overall} size={56} stroke={5} />
+
+        {/* Ações — desktop */}
+        <div className="hidden flex-col gap-1.5 sm:flex">
+          <Link
+            href={`/perfil/${slug}`}
+            className="inline-flex h-8 items-center justify-center rounded-lg border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            Ver perfil
+          </Link>
+          <Link
+            href={`/comparar?a=${slug}`}
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-primary/40 bg-primary/5 px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+          >
+            <GitCompare className="h-3.5 w-3.5" />
+            Comparar
+          </Link>
+        </div>
+
+        {/* Mobile — apenas "Ver" */}
+        <Link
+          href={`/perfil/${slug}`}
+          className="inline-flex h-8 items-center justify-center rounded-lg border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:hidden"
+        >
+          Ver
+        </Link>
       </div>
-    </Link>
+    </GlassCard>
   );
 }
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 export function PoliticianCardSkeleton() {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-border bg-background p-4">
-      <div className="h-8 w-8 shrink-0 animate-pulse rounded-full bg-muted" />
-      <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted" />
-      <div className="min-w-0 flex-1 space-y-2">
-        <div className="h-4 w-40 animate-pulse rounded bg-muted" />
-        <div className="h-3 w-28 animate-pulse rounded bg-muted" />
+    <GlassCard className="flex items-start gap-3 px-4 py-4">
+      <div className="mt-1 h-6 w-8 skeleton rounded" />
+      <div className="mt-0.5 h-11 w-11 skeleton shrink-0 rounded-full" />
+      <div className="min-w-0 flex-1 space-y-2 pt-1">
+        <div className="h-4 w-44 skeleton rounded" />
+        <div className="h-3 w-32 skeleton rounded" />
+        <div className="hidden flex-col gap-1.5 pt-1 lg:flex">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className="h-3 w-24 skeleton rounded" />
+              <div className="h-1 flex-1 skeleton rounded-full" />
+              <div className="h-3 w-7 skeleton rounded" />
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="shrink-0 space-y-1 text-right">
-        <div className="h-7 w-12 animate-pulse rounded bg-muted" />
-        <div className="h-3 w-8 animate-pulse rounded bg-muted" />
+      <div className="flex shrink-0 flex-col items-center gap-3">
+        <div className="h-14 w-14 skeleton rounded-full" />
+        <div className="hidden flex-col gap-1.5 sm:flex">
+          <div className="h-8 w-20 skeleton rounded-lg" />
+          <div className="h-8 w-20 skeleton rounded-lg" />
+        </div>
       </div>
-    </div>
+    </GlassCard>
   );
 }
 
+// ─── Compact ──────────────────────────────────────────────────────────────────
+
 export function PoliticianCardCompact({ candidate, className }: PoliticianCardProps) {
   const { name, slug, office, state, photoUrl, party, score } = candidate;
+  const isMock = !score || score.scoreType === "mock";
+
   return (
     <Link
       href={`/perfil/${slug}`}
       className={cn(
-        "group flex items-center gap-3 rounded-lg border border-border bg-background p-3 transition-all hover:border-border-strong hover:shadow-sm",
+        "group flex items-center gap-3 rounded-xl border border-border bg-card/80 p-3 transition-all hover:border-border-strong hover:shadow-sm",
         className,
       )}
     >
       <PoliticianAvatar name={name} photoUrl={photoUrl} size="sm" />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary">{name}</p>
-        <p className="text-xs text-muted-foreground">{party?.acronym} · {OFFICE_LABELS[office] ?? office}{state && ` · ${state}`}</p>
+        <p className="truncate text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
+          {name}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {party?.acronym} · {OFFICE_LABELS[office] ?? office}
+          {state && ` · ${state}`}
+        </p>
       </div>
-      <span className="text-sm font-bold tabular-nums text-foreground">{score?.overall.toFixed(1) ?? "—"}</span>
+      <span
+        className={cn(
+          "font-display text-sm font-bold tabular-nums",
+          isMock ? "text-muted-foreground" : "text-foreground",
+        )}
+      >
+        {isMock ? "—" : score!.overall.toFixed(1)}
+      </span>
     </Link>
   );
 }
 
-interface AvatarProps {
-  name: string;
-  photoUrl: string | null;
-  size?: "sm" | "md" | "lg";
-}
-
-export function PoliticianAvatar({ name, photoUrl, size = "md" }: AvatarProps) {
-  const sizes = { sm: "h-8 w-8 text-xs", md: "h-10 w-10 text-sm", lg: "h-16 w-16 text-xl" };
-  const initials = name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
-
-  if (photoUrl) {
-    return (
-      <div className={cn("relative shrink-0 overflow-hidden rounded-full", sizes[size])}>
-        <Image src={photoUrl} alt={name} fill className="object-cover" sizes="64px" />
-      </div>
-    );
-  }
-
-  return (
-    <div className={cn("flex shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary", sizes[size])}>
-      {initials}
-    </div>
-  );
-}
-
-export { ScoreBar, Badge };
-export { SCORE_LABELS_FULL } from "@/lib/content/labels";
+// Re-export do avatar para retrocompatibilidade
+export { PoliticianAvatar } from "@/components/politicians/politician-avatar";

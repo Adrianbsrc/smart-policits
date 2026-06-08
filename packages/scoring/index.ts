@@ -480,6 +480,15 @@ export function calculateScore(input: RawScoreInput): ScoreResult {
   };
 }
 
+// ─── Classificador temático (re-exportado para uso no ETL) ───────────────────
+export {
+  classifyTextToThemes,
+  calcThematicActivityScores,
+  themesToThematicInput,
+  ALL_THEMES,
+} from './thematic-classifier';
+export type { ThemeDimension, ClassifiedVote } from './thematic-classifier';
+
 // ─── Mock determinístico (dev/seed) ──────────────────────────────────────────
 
 /**

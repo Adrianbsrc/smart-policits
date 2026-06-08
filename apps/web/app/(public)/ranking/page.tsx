@@ -18,25 +18,9 @@ export const metadata: Metadata = {
     description:
       "Compare candidatos por educação, saúde, segurança, economia e transparência. Dados do TSE e fontes oficiais.",
   },
-  alternates: {
-    canonical: "/ranking",
-  },
+  alternates: { canonical: "/ranking" },
 };
 
 export default function RankingPage() {
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Ranking de Políticos
-        </h1>
-        <p className="mt-3 text-lg text-muted-foreground">
-          Avaliados com base em dados públicos, histórico de votações e transparência. Filtre por cargo, estado e partido.
-        </p>
-      </div>
-
-      <RankingClient />
-    </div>
-  );
+  return <RankingClient />;
 }

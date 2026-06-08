@@ -1,20 +1,19 @@
 /**
- * Sync deputies from Câmara dos Deputados API into the database.
+ * Sync federal deputies from Câmara dos Deputados API.
  *
  * Usage:
  *   pnpm --filter @smart-politics/etl sync:camara
  *
- * DATABASE_URL is loaded from the monorepo root .env (or the etl package .env as fallback).
+ * DATABASE_URL is loaded from the monorepo root .env.
  */
 import * as dotenv from "dotenv";
 import { resolve } from "path";
 
-// Load from monorepo root .env first, then fall back to local
 dotenv.config({ path: resolve(__dirname, "../../../.env") });
 dotenv.config();
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@smart-politics/db";
-
 import { syncCamaraDeputados } from "../src/sync/camara";
 
 async function main() {
@@ -25,7 +24,8 @@ async function main() {
   const prisma = new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
 
   try {
-    await syncCamaraDeputados(prisma as unknown as import("@smart-politics/db").PrismaClient);
+    const result = await syncCamaraDeputados(prisma as never);
+    console.log(`\nResultado: ${result.synced} sincronizados, ${result.skipped} ignorados`);
   } finally {
     await prisma.$disconnect();
   }

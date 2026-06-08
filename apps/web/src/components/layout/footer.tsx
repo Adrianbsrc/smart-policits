@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { BarChart3 } from "lucide-react";
 
 const footerLinks = {
   produto: [
@@ -24,15 +23,16 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-background-subtle">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-5">
           {/* Brand */}
           <div className="col-span-2 flex flex-col gap-4 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 text-foreground">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <BarChart3 className="h-4 w-4" />
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-[9px] bg-gradient-to-br from-primary to-secondary">
+                <div className="absolute inset-[4px] rounded-[5px] bg-background" />
+                <span className="relative text-[13px] font-extrabold text-primary">★</span>
               </div>
-              <span className="font-semibold tracking-tight">Smart Politics</span>
+              <span className="font-display font-bold tracking-tight">Smart Politics</span>
             </Link>
             <p className="max-w-xs text-sm text-muted-foreground leading-relaxed">
               Plataforma independente para ajudar você a votar com consciência. Dados públicos, sem viés político.

@@ -6,12 +6,16 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navLinks = [
+const PUBLIC_LINKS = [
   { href: "/ranking", label: "Ranking" },
   { href: "/feed", label: "Feed" },
   { href: "/quiz", label: "Quiz" },
   { href: "/comparar", label: "Comparar" },
   { href: "/metodologia", label: "Metodologia" },
+] as const;
+
+const AUTH_LINKS = [
+  { href: "/favoritos", label: "Favoritos" },
 ] as const;
 
 interface MobileMenuProps {
@@ -50,7 +54,21 @@ export function MobileMenu({ isLoggedIn }: MobileMenuProps) {
           />
           <div className="fixed inset-x-0 top-16 z-50 border-b border-border bg-background pb-6 shadow-lg md:hidden">
             <nav className="flex flex-col gap-1 px-4 pt-4">
-              {navLinks.map(({ href, label }) => (
+              {PUBLIC_LINKS.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                    pathname === href
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </Link>
+              ))}
+              {isLoggedIn && AUTH_LINKS.map(({ href, label }) => (
                 <Link
                   key={href}
                   href={href}

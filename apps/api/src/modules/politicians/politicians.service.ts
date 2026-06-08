@@ -1,18 +1,53 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { slugify } from "@smart-politics/core";
+import { fetchVotacoes } from "@smart-politics/etl";
+import type { Prisma } from "@smart-politics/db";
 
 import { paginate, type PaginatedResponse } from "../../common/dto/pagination.dto";
-import { type CamaraVoto, CamaraApiService } from "../etl/camara-api.service";
 import type { PoliticianFilters, PoliticianResult } from "./politicians.repository";
 import { PoliticiansRepository } from "./politicians.repository";
 import type { CreatePoliticianDto } from "./dto/create-politician.dto";
 import type { ListPoliticiansDto } from "./dto/list-politicians.dto";
+import { PrismaService } from "../../config/prisma.service";
+
+const SCORE_HISTORY_SELECT = {
+  id: true,
+  overall: true,
+  activity: true,
+  transparency: true,
+  fiscal: true,
+  constitutional: true,
+  integrityMultiplier: true,
+  scoreType: true,
+  trigger: true,
+  snapshotAt: true,
+} as const satisfies Prisma.ScoreHistorySelect;
+
+const SCORE_EVIDENCE_SELECT = {
+  id: true,
+  dimension: true,
+  explanation: true,
+  deltaValue: true,
+  createdAt: true,
+  event: {
+    select: {
+      id: true,
+      title: true,
+      eventDate: true,
+      type: true,
+      sourceUrl: true,
+    },
+  },
+} as const satisfies Prisma.ScoreEvidenceSelect;
+
+export type ScoreHistoryItem = Prisma.ScoreHistoryGetPayload<{ select: typeof SCORE_HISTORY_SELECT }>;
+export type ScoreEvidenceItem = Prisma.ScoreEvidenceGetPayload<{ select: typeof SCORE_EVIDENCE_SELECT }>;
 
 @Injectable()
 export class PoliticiansService {
   constructor(
     private readonly politiciansRepository: PoliticiansRepository,
-    private readonly camaraApiService: CamaraApiService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async findAll(query: ListPoliticiansDto): Promise<PaginatedResponse<PoliticianResult>> {
@@ -57,13 +92,44 @@ export class PoliticiansService {
     return this.politiciansRepository.update(id, dto);
   }
 
-  async getCamaraVotacoes(slug: string): Promise<{ dados: CamaraVoto[] }> {
+  async getCamaraVotacoes(slug: string): Promise<{ dados: unknown[] }> {
     const politician = await this.politiciansRepository.findBySlug(slug);
     if (!politician) throw new NotFoundException(`Político "${slug}" não encontrado`);
     if (politician.office !== "federal_deputy" || !politician.tseId || !/^\d+$/.test(politician.tseId)) {
       return { dados: [] };
     }
-    const votacoes = await this.camaraApiService.getVotacoes(politician.tseId);
+    const votacoes = await fetchVotacoes(Number(politician.tseId), 150);
     return { dados: votacoes };
+  }
+
+  async getScoreHistory(slug: string, limit: number): Promise<ScoreHistoryItem[]> {
+    const politician = await this.politiciansRepository.findBySlug(slug);
+    if (!politician) throw new NotFoundException(`Político "${slug}" não encontrado`);
+
+    return this.prisma.scoreHistory.findMany({
+      where: { politicianId: politician.id },
+      select: SCORE_HISTORY_SELECT,
+      orderBy: { snapshotAt: "desc" },
+      take: Math.min(limit, 365),
+    });
+  }
+
+  async getScoreEvidence(
+    slug: string,
+    dimension: string | undefined,
+    limit: number,
+  ): Promise<ScoreEvidenceItem[]> {
+    const politician = await this.politiciansRepository.findBySlug(slug);
+    if (!politician) throw new NotFoundException(`Político "${slug}" não encontrado`);
+
+    return this.prisma.scoreEvidence.findMany({
+      where: {
+        politicianId: politician.id,
+        ...(dimension ? { dimension } : {}),
+      },
+      select: SCORE_EVIDENCE_SELECT,
+      orderBy: { createdAt: "desc" },
+      take: Math.min(limit, 100),
+    });
   }
 }

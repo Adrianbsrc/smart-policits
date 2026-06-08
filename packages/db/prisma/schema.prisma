@@ -39,6 +39,27 @@ enum FeedItemType {
   generic
 }
 
+enum DataSource {
+  api
+  manual
+  hybrid
+}
+
+enum ScoreType {
+  mock    // score zerado — nenhum dado real disponível
+  partial // dados reais parciais (presença, proposições)
+  real    // dados reais completos com integridade verificada
+}
+
+enum FactType {
+  court_case
+  conviction
+  controversy
+  achievement
+  statement
+  position
+}
+
 model User {
   id         String   @id @default(cuid())
   supabaseId String   @unique @map("supabase_id")
@@ -72,27 +93,68 @@ model Party {
 }
 
 model Politician {
-  id        String   @id @default(cuid())
-  tseId     String?  @unique @map("tse_id")
-  name      String
-  slug      String   @unique
-  office    Office
-  state     String?
-  photoUrl  String?  @map("photo_url")
-  bio       String?
-  partyId   String?  @map("party_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id              String     @id @default(cuid())
+  tseId           String?    @unique @map("tse_id")
+  name            String
+  slug            String     @unique
+  office          Office
+  state           String?
+  photoUrl        String?    @map("photo_url")
+  bio             String?
+  partyId         String?    @map("party_id")
+  candidateNumber        Int?             @map("candidate_number")
+  fichaLimpaIneligible   Boolean          @default(false) @map("ficha_limpa_ineligible")
+  dataSource             DataSource       @default(api) @map("data_source")
+  isPreCandidate         Boolean          @default(false) @map("is_pre_candidate")
+  candidateYear          Int?             @map("candidate_year")
+  mandateCount           Int?             @map("mandate_count")
+  status                 PoliticianStatus @default(in_mandate)
+  mandateStart           DateTime?        @map("mandate_start")
+  mandateEnd             DateTime?        @map("mandate_end")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
 
-  party     Party?     @relation(fields: [partyId], references: [id])
+  party     Party?            @relation(fields: [partyId], references: [id])
   score     Score?
   follows   Follow[]
   alerts    Alert[]
   feedItems FeedItem[]
+  facts     PoliticianFact[]
+
+  events            PoliticalEvent[]
+  scoreEvidences    ScoreEvidence[]
+  scoreHistory      ScoreHistory[]
+  promises          PoliticalPromise[]
+  expenses          PublicExpense[]
+  assetDeclarations AssetDeclaration[]
 
   @@index([office, state])
   @@index([slug])
+  @@index([isPreCandidate, candidateYear])
   @@map("politicians")
+}
+
+model PoliticianFact {
+  id           String     @id @default(cuid())
+  politicianId String     @map("politician_id")
+  type         FactType
+  title        String
+  description  String     @db.Text
+  source       String?
+  sourceUrl    String?    @map("source_url")
+  date         DateTime?
+  verifiedAt   DateTime?  @map("verified_at")
+  verifiedBy   String?    @map("verified_by")
+  sentiment    Int?
+  impact       Int?
+  tags         String[]
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  politician Politician @relation(fields: [politicianId], references: [id], onDelete: Cascade)
+
+  @@index([politicianId, type])
+  @@map("politician_facts")
 }
 
 model Score {
@@ -125,8 +187,9 @@ model Score {
   penalties           Json  @default("[]")
   breakdown           Json?
 
-  scoreVersion String   @default("2.0.0") @map("score_version")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  scoreVersion String    @default("2.0.0") @map("score_version")
+  scoreType    ScoreType @default(mock) @map("score_type")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   politician Politician @relation(fields: [politicianId], references: [id], onDelete: Cascade)
 
@@ -161,6 +224,42 @@ model QuizResult {
 enum AlertType {
   score_change
   news
+}
+
+enum PoliticalEventType {
+  vote
+  bill_proposed
+  bill_approved
+  investigation
+  decree
+  public_expense
+  statement
+}
+
+enum PromiseStatus {
+  in_progress
+  fulfilled
+  partial
+  not_fulfilled
+  abandoned
+}
+
+enum ExpenseCategory {
+  travel
+  office
+  fuel
+  consultancy
+  publicity
+  other
+}
+
+enum PoliticianStatus {
+  pre_candidate // declarou interesse, não registrado oficialmente
+  candidate     // registrado para eleição
+  elected       // eleito, ainda não empossado
+  in_mandate    // em exercício de mandato
+  former        // ex-mandatário
+  inactive      // inativo
 }
 
 model Alert {
@@ -200,4 +299,165 @@ model FeedItem {
   @@index([type, active, publishedAt])
   @@index([politicianId])
   @@map("feed_items")
+}
+
+model PoliticalEvent {
+  id                 String             @id @default(cuid())
+  politicianId       String             @map("politician_id")
+  type               PoliticalEventType
+  title              String
+  description        String             @db.Text
+  eventDate          DateTime           @map("event_date")
+  sourceUrl          String?            @map("source_url")
+  sourceLabel        String?            @map("source_label")
+  externalId         String?            @map("external_id")
+  interpretationHash String?            @map("interpretation_hash")
+  topics             String[]
+  sentiment          Int                @default(0)
+  impact             Int                @default(5)
+  metadata           Json               @default("{}")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  politician Politician      @relation(fields: [politicianId], references: [id], onDelete: Cascade)
+  evidences  ScoreEvidence[]
+
+  @@unique([politicianId, externalId])
+  @@index([politicianId, eventDate(sort: Desc)])
+  @@index([type, eventDate(sort: Desc)])
+  @@map("political_events")
+}
+
+model ScoreEvidence {
+  id           String   @id @default(cuid())
+  politicianId String   @map("politician_id")
+  eventId      String?  @map("event_id")
+  dimension    String
+  explanation  String
+  deltaValue   Float    @map("delta_value")
+  scoreVersion String   @map("score_version")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  politician Politician      @relation(fields: [politicianId], references: [id], onDelete: Cascade)
+  event      PoliticalEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@unique([eventId, dimension])
+  @@index([politicianId, dimension])
+  @@index([politicianId, createdAt(sort: Desc)])
+  @@map("score_evidences")
+}
+
+model ScoreHistory {
+  id                  String    @id @default(cuid())
+  politicianId        String    @map("politician_id")
+  overall             Float
+  education           Float
+  health              Float
+  security            Float
+  economy             Float
+  environment         Float
+  infrastructure      Float
+  technology          Float
+  agriculture         Float
+  international       Float
+  culture             Float
+  socialRights        Float     @map("social_rights")
+  entrepreneurship    Float
+  transparency        Float
+  constitutional      Float
+  fiscal              Float
+  activity            Float
+  integrityMultiplier Float     @map("integrity_multiplier")
+  scoreVersion        String    @map("score_version")
+  scoreType           ScoreType @map("score_type")
+  trigger             String    @default("etl_sync")
+  snapshotAt          DateTime  @default(now()) @map("snapshot_at")
+
+  politician Politician @relation(fields: [politicianId], references: [id], onDelete: Cascade)
+
+  @@index([politicianId, snapshotAt(sort: Desc)])
+  @@map("score_history")
+}
+
+model PoliticalPromise {
+  id           String        @id @default(cuid())
+  politicianId String        @map("politician_id")
+  title        String
+  description  String        @db.Text
+  status       PromiseStatus @default(in_progress)
+  category     String
+  madeAt       DateTime?     @map("made_at")
+  resolvedAt   DateTime?     @map("resolved_at")
+  sourceUrl    String?       @map("source_url")
+  evidenceUrl  String?       @map("evidence_url")
+  notes        String?       @db.Text
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  politician Politician @relation(fields: [politicianId], references: [id], onDelete: Cascade)
+
+  @@index([politicianId, status])
+  @@map("political_promises")
+}
+
+model PublicExpense {
+  id           String          @id @default(cuid())
+  politicianId String          @map("politician_id")
+  category     ExpenseCategory
+  description  String
+  amountBrl    Float           @map("amount_brl")
+  expenseDate  DateTime        @map("expense_date")
+  supplier     String?
+  documentUrl  String?         @map("document_url")
+  externalId   String?         @map("external_id")
+  year         Int
+  month        Int
+  createdAt    DateTime        @default(now()) @map("created_at")
+
+  politician Politician @relation(fields: [politicianId], references: [id], onDelete: Cascade)
+
+  @@unique([politicianId, externalId])
+  @@index([politicianId, year, month])
+  @@index([politicianId, category])
+  @@map("public_expenses")
+}
+
+model AssetDeclaration {
+  id              String   @id @default(cuid())
+  politicianId    String   @map("politician_id")
+  year            Int
+  totalValueBrl   Float    @map("total_value_brl")
+  assets          Json
+  declarationUrl  String?  @map("declaration_url")
+  sourceLabel     String?  @map("source_label")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  politician Politician @relation(fields: [politicianId], references: [id], onDelete: Cascade)
+
+  @@unique([politicianId, year])
+  @@index([politicianId, year(sort: Desc)])
+  @@map("asset_declarations")
+}
+
+model Interpretation {
+  id            String   @id @default(cuid())
+  /** SHA-256 truncado do input — garante deduplicação por conteúdo */
+  inputHash     String   @unique @map("input_hash")
+  /** Tipo do evento: bill, vote, decree, executive_action, news, spending */
+  inputType     String   @map("input_type")
+  /** Dados originais de entrada (para reprocessamento futuro) */
+  inputData     Json     @map("input_data")
+  /** InterpretationResult validado pelo Zod */
+  result        Json
+  providerId    String   @map("provider_id")
+  modelUsed     String?  @map("model_used")
+  /** Versão do schema — permite migrações de estrutura futura */
+  schemaVersion String   @default("1.0.0") @map("schema_version")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([inputType, createdAt])
+  @@index([providerId])
+  @@map("interpretations")
 }

@@ -50,6 +50,10 @@ export async function fetchDeputadoDetalhe(id: number): Promise<CamaraDeputadoDe
 
 export async function fetchVotacoes(deputadoId: number, itens = 20): Promise<CamaraVoto[]> {
   const url = `${CAMARA_BASE}/deputados/${deputadoId}/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=${itens}`;
-  const data = await fetchJson<CamaraListResponse<CamaraVoto>>(url);
-  return data.dados;
+  try {
+    const data = await fetchJson<CamaraListResponse<CamaraVoto>>(url);
+    return data.dados;
+  } catch {
+    return []; // endpoint pode retornar 405 para alguns deputados; tratar como sem dados
+  }
 }

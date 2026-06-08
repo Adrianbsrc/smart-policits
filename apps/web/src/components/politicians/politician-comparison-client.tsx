@@ -5,13 +5,13 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Search, X, Share2, Check, ArrowRight, Plus, Users } from "lucide-react";
+import { Search, X, Share2, Check, ArrowRight, Plus, Users, ShieldCheck } from "lucide-react";
 
 import { politiciansService } from "@/lib/api/services";
 import { useDebounce } from "@/hooks/use-debounce";
 import { OFFICE_LABELS, SCORE_LABELS_FULL, SCORE_MAIN_KEYS, SCORE_EXTENDED_KEYS } from "@/lib/content/labels";
 import { FollowButton } from "@/components/politicians/follow-button";
-import type { PoliticianDetail, PoliticianScore } from "@/lib/api/types";
+import type { PoliticianDetail, PoliticianScore, ScoreBreakdown } from "@/lib/api/types";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -20,7 +20,7 @@ const MIN_SLOTS = 2;
 const SLOT_PARAMS = ["a", "b", "c", "d"] as const;
 const SLOT_LABELS = ["Perfil A", "Perfil B", "Perfil C", "Perfil D"] as const;
 
-const SLOT_COLORS = ["#2563eb", "#10b981", "#f59e0b", "#8b5cf6"] as const;
+const SLOT_COLORS = ["#2e7d5b", "#2563eb", "#f59e0b", "#8b5cf6"] as const;
 
 type Slots = [
   PoliticianDetail | null,
@@ -30,6 +30,33 @@ type Slots = [
 ];
 
 const EMPTY_SLOTS: Slots = [null, null, null, null];
+
+// ─── Pillars ──────────────────────────────────────────────────────────────────
+
+const PILLARS = [
+  { key: "transparency", label: "Transparência", bdKey: "transparency" as keyof ScoreBreakdown },
+  { key: "activity",     label: "Presença",      bdKey: "activity"     as keyof ScoreBreakdown },
+  { key: "constitutional", label: "Coerência",   bdKey: "constitutional" as keyof ScoreBreakdown },
+  { key: "integrity",    label: "Integridade",   bdKey: null },
+  { key: "thematic",     label: "Produtividade", bdKey: "thematic"     as keyof ScoreBreakdown },
+] as const;
+
+function getPillarValue(score: PoliticianScore, pillarKey: string): number | null {
+  if (score.scoreType === "mock") return null;
+  if (pillarKey === "integrity") {
+    return score.integrityMultiplier * 10;
+  }
+  const bd = score.breakdown;
+  if (!bd) return null;
+  return (bd[pillarKey as keyof ScoreBreakdown] as number | undefined) ?? null;
+}
+
+function getScoreValue(score: PoliticianScore | null, key: keyof PoliticianScore): number | null {
+  if (!score) return null;
+  if (score.scoreType === "mock") return null;
+  const val = score[key];
+  return typeof val === "number" ? val : null;
+}
 
 // ─── Politician search box ────────────────────────────────────────────────────
 
@@ -72,6 +99,7 @@ function PoliticianSearchBox({ label, color, selected, onSelect, onRemoveSlot }:
   }
 
   if (selected) {
+    const isMock = !selected.score || selected.score.scoreType === "mock";
     return (
       <div
         className="flex items-center gap-3 rounded-xl border-2 bg-background p-4"
@@ -84,15 +112,26 @@ function PoliticianSearchBox({ label, color, selected, onSelect, onRemoveSlot }:
           {selected.photoUrl ? (
             <Image src={selected.photoUrl} alt={selected.name} fill className="object-cover" sizes="48px" />
           ) : (
-            <span>{selected.name[0]}</span>
+            <span>{selected.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}</span>
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-foreground">{selected.name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="truncate font-semibold text-foreground">{selected.name}</p>
+            {!selected.fichaLimpaIneligible && (
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" aria-label="Ficha limpa" />
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
             {selected.party?.acronym ?? "—"} · {OFFICE_LABELS[selected.office] ?? selected.office}
             {selected.state ? ` · ${selected.state}` : ""}
           </p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className={`text-lg font-bold tabular-nums ${isMock ? "text-muted-foreground" : "text-foreground"}`}>
+            {isMock ? "—" : selected.score!.overall.toFixed(1)}
+          </p>
+          <p className="text-[10px] text-muted-foreground">/ 10</p>
         </div>
         <button
           onClick={() => onSelect(null)}
@@ -149,7 +188,7 @@ function PoliticianSearchBox({ label, color, selected, onSelect, onRemoveSlot }:
                 {p.photoUrl ? (
                   <Image src={p.photoUrl} alt={p.name} fill className="object-cover" sizes="32px" />
                 ) : (
-                  <span>{p.name[0]}</span>
+                  <span>{p.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}</span>
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -178,10 +217,7 @@ function PoliticianSearchBox({ label, color, selected, onSelect, onRemoveSlot }:
   );
 }
 
-// ─── Score row ────────────────────────────────────────────────────────────────
-
-const ALL_SCORE_KEYS = [...SCORE_MAIN_KEYS, ...SCORE_EXTENDED_KEYS] as const;
-type ScoreKey = (typeof ALL_SCORE_KEYS)[number];
+// ─── Score bar row ─────────────────────────────────────────────────────────────
 
 function ScoreRow({
   label,
@@ -222,12 +258,87 @@ function ScoreRow({
                   isLeader ? "font-semibold text-foreground" : "text-muted-foreground"
                 }`}
               >
-                {value?.toFixed(1) ?? "—"}
+                {value !== null ? value.toFixed(1) : "—"}
               </span>
             </div>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ─── Pillar comparison table ───────────────────────────────────────────────────
+
+function PillarsTable({
+  politicians,
+  colors,
+}: {
+  politicians: PoliticianDetail[];
+  colors: string[];
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-border bg-muted/40">
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Pilar
+            </th>
+            {politicians.map((p, i) => (
+              <th
+                key={p.id}
+                className="px-3 py-3 text-center text-xs font-semibold"
+                style={{ color: colors[i] }}
+              >
+                {String.fromCharCode(65 + i)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {PILLARS.map((pillar, rowIdx) => {
+            const vals = politicians.map((p) =>
+              p.score ? getPillarValue(p.score, pillar.key) : null,
+            );
+            const maxVal = Math.max(...vals.map((v) => v ?? 0), 0.001);
+            const topVal = Math.max(...vals.map((v) => v ?? 0));
+
+            return (
+              <tr
+                key={pillar.key}
+                className={`border-b border-border/50 ${rowIdx % 2 === 0 ? "" : "bg-muted/20"}`}
+              >
+                <td className="px-4 py-3 font-medium text-foreground">{pillar.label}</td>
+                {vals.map((val, i) => {
+                  const isLeader = val !== null && val > 0 && val === topVal;
+                  const pct = ((val ?? 0) / maxVal) * 100;
+                  return (
+                    <td key={i} className="px-3 py-3">
+                      <div className="flex flex-col items-center gap-1">
+                        <span
+                          className={`text-sm font-bold tabular-nums ${
+                            isLeader ? "" : "text-muted-foreground"
+                          }`}
+                          style={isLeader ? { color: colors[i] } : undefined}
+                        >
+                          {val !== null ? val.toFixed(1) : "—"}
+                        </span>
+                        <div className="h-1 w-10 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, backgroundColor: colors[i] }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -244,8 +355,8 @@ function ComparisonPanel({
   const [copied, setCopied] = useState(false);
 
   const winner = politicians.reduce<PoliticianDetail | null>((best, p) => {
-    if (!p.score) return best;
-    if (!best?.score) return p;
+    if (!p.score || p.score.scoreType === "mock") return best;
+    if (!best?.score || best.score.scoreType === "mock") return p;
     return p.score.overall > best.score.overall ? p : best;
   }, null);
 
@@ -275,109 +386,152 @@ function ComparisonPanel({
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
   }
 
-  const scoreValues = (key: ScoreKey) =>
+  const pillarValues = (pillarKey: string) =>
     politicians.map((p, i) => ({
-      value: p.score ? (p.score[key as keyof PoliticianScore] as number) : null,
+      value: p.score ? getPillarValue(p.score, pillarKey) : null,
+      color: colors[i] ?? SLOT_COLORS[i] ?? SLOT_COLORS[0],
+    }));
+
+  const thematicValues = (key: keyof PoliticianScore) =>
+    politicians.map((p, i) => ({
+      value: getScoreValue(p.score, key),
       color: colors[i] ?? SLOT_COLORS[i] ?? SLOT_COLORS[0],
     }));
 
   return (
-    <div className="mt-8 rounded-2xl border border-border bg-background p-6 shadow-sm">
-      {/* Politician cards */}
-      <div className={`mb-8 grid gap-3 ${gridClass}`}>
-        {politicians.map((p, i) => (
-          <div
-            key={p.id}
-            className="relative rounded-xl border-2 bg-background p-4 text-center"
-            style={{ borderColor: `${colors[i]}44` }}
-          >
-            <span
-              className="absolute left-3 top-3 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
-              style={{ backgroundColor: colors[i] }}
-            >
-              {String.fromCharCode(65 + i)}
-            </span>
-
+    <div className="mt-8 space-y-6">
+      {/* Header cards */}
+      <div className={`grid gap-3 ${gridClass}`}>
+        {politicians.map((p, i) => {
+          const isMock = !p.score || p.score.scoreType === "mock";
+          return (
             <div
-              className="relative mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full text-lg font-bold text-white"
-              style={{ backgroundColor: colors[i] }}
+              key={p.id}
+              className="relative rounded-xl border-2 bg-background p-4 text-center"
+              style={{ borderColor: `${colors[i]}44` }}
             >
-              {p.photoUrl ? (
-                <Image src={p.photoUrl} alt={p.name} fill className="object-cover" sizes="56px" />
-              ) : (
-                <span>{p.name[0]}</span>
-              )}
-            </div>
-            <p className="truncate text-sm font-semibold text-foreground">{p.name}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {p.party?.acronym ?? "—"} · {OFFICE_LABELS[p.office] ?? p.office}
-            </p>
-            <div className="mt-2 flex items-center justify-center gap-1">
               <span
-                className="text-xl font-bold tabular-nums"
-                style={{ color: p === winner ? colors[i] : undefined }}
-              >
-                {p.score?.overall.toFixed(1) ?? "—"}
-              </span>
-              <span className="text-xs text-muted-foreground">/10</span>
-            </div>
-            {p === winner && (
-              <span
-                className="mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
-                style={{ backgroundColor: colors[i] }}
-              >
-                Maior score
-              </span>
-            )}
-            <div className="mt-3 flex flex-col items-center gap-2">
-              <FollowButton
-                candidateId={p.id}
-                variant="full"
-                className="w-full justify-center text-xs h-8 px-3"
-              />
-              <Link
-                href={`/perfil/${p.slug}`}
-                className="flex items-center justify-center gap-1 text-xs hover:underline"
-                style={{ color: colors[i] }}
-              >
-                Ver perfil
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {politicians.length > 2 && (
-        <div className="mb-6 flex flex-wrap gap-3">
-          {politicians.map((p, i) => (
-            <div key={p.id} className="flex items-center gap-1.5">
-              <span
-                className="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white"
+                className="absolute left-3 top-3 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
                 style={{ backgroundColor: colors[i] }}
               >
                 {String.fromCharCode(65 + i)}
               </span>
-              <span className="text-xs text-muted-foreground">{p.name.split(" ")[0]}</span>
-            </div>
-          ))}
-        </div>
-      )}
 
-      <div className="space-y-5">
-        <h3 className="text-sm font-semibold text-foreground">Dimensões principais</h3>
-        {SCORE_MAIN_KEYS.map((key) => (
-          <ScoreRow key={key} label={SCORE_LABELS_FULL[key]} values={scoreValues(key)} />
-        ))}
-        <h3 className="mt-6 border-t border-border pt-5 text-sm font-semibold text-foreground">
-          Dimensões estendidas
-        </h3>
-        {SCORE_EXTENDED_KEYS.map((key) => (
-          <ScoreRow key={key} label={SCORE_LABELS_FULL[key]} values={scoreValues(key)} />
-        ))}
+              <div
+                className="relative mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full text-lg font-bold text-white"
+                style={{ backgroundColor: colors[i] }}
+              >
+                {p.photoUrl ? (
+                  <Image src={p.photoUrl} alt={p.name} fill className="object-cover" sizes="56px" />
+                ) : (
+                  <span>{p.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}</span>
+                )}
+              </div>
+
+              <p className="truncate text-sm font-semibold text-foreground">{p.name}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {p.party?.acronym ?? "—"} · {OFFICE_LABELS[p.office] ?? p.office}
+              </p>
+
+              {!p.fichaLimpaIneligible && (
+                <div className="mt-1 flex items-center justify-center gap-1">
+                  <ShieldCheck className="h-3 w-3 text-success" />
+                  <span className="text-[10px] text-success">Ficha limpa</span>
+                </div>
+              )}
+
+              <div className="mt-2 flex items-center justify-center gap-1">
+                <span
+                  className={`text-xl font-bold tabular-nums ${isMock ? "text-muted-foreground" : ""}`}
+                  style={!isMock && p === winner ? { color: colors[i] } : undefined}
+                >
+                  {isMock ? "—" : p.score!.overall.toFixed(1)}
+                </span>
+                <span className="text-xs text-muted-foreground">/10</span>
+              </div>
+
+              {!isMock && p === winner && (
+                <span
+                  className="mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
+                  style={{ backgroundColor: colors[i] }}
+                >
+                  Maior score
+                </span>
+              )}
+              {isMock && (
+                <span className="mt-1.5 inline-block text-[10px] text-muted-foreground">
+                  Dados em coleta
+                </span>
+              )}
+
+              <div className="mt-3 flex flex-col items-center gap-2">
+                <FollowButton
+                  candidateId={p.id}
+                  variant="full"
+                  className="w-full justify-center text-xs h-8 px-3"
+                />
+                <Link
+                  href={`/perfil/${p.slug}`}
+                  className="flex items-center justify-center gap-1 text-xs hover:underline"
+                  style={{ color: colors[i] }}
+                >
+                  Ver perfil
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+      {/* Pillars table */}
+      <div>
+        <h3 className="mb-3 text-sm font-semibold text-foreground">5 Pilares</h3>
+        <PillarsTable politicians={politicians} colors={colors} />
+      </div>
+
+      {/* Score bars by section */}
+      <div className="rounded-2xl border border-border bg-background p-6 shadow-sm">
+        {politicians.length > 2 && (
+          <div className="mb-5 flex flex-wrap gap-3">
+            {politicians.map((p, i) => (
+              <div key={p.id} className="flex items-center gap-1.5">
+                <span
+                  className="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white"
+                  style={{ backgroundColor: colors[i] }}
+                >
+                  {String.fromCharCode(65 + i)}
+                </span>
+                <span className="text-xs text-muted-foreground">{p.name.split(" ")[0]}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-5">
+          <h3 className="text-sm font-semibold text-foreground">Dimensões temáticas</h3>
+          {SCORE_MAIN_KEYS.map((key) => (
+            <ScoreRow
+              key={key}
+              label={SCORE_LABELS_FULL[key]}
+              values={thematicValues(key as keyof PoliticianScore)}
+            />
+          ))}
+          <h3 className="mt-6 border-t border-border pt-5 text-sm font-semibold text-foreground">
+            Dimensões estendidas
+          </h3>
+          {SCORE_EXTENDED_KEYS.map((key) => (
+            <ScoreRow
+              key={key}
+              label={SCORE_LABELS_FULL[key]}
+              values={thematicValues(key as keyof PoliticianScore)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Share buttons */}
+      <div className="flex flex-col gap-3 sm:flex-row">
         <button
           onClick={handleShare}
           className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
@@ -465,63 +619,65 @@ export function PoliticianComparisonClient() {
   const slotColors        = Array.from({ length: visibleCount }, (_, i) => SLOT_COLORS[i] ?? SLOT_COLORS[0]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Comparar Políticos
-        </h1>
-        <p className="mt-3 text-muted-foreground">
-          Selecione de 2 a 4 políticos para ver uma comparação detalhada de scores por dimensão.
-        </p>
-      </div>
-
-      <div
-        className={`grid gap-4 ${
-          visibleCount === 1 ? "grid-cols-1" :
-          visibleCount === 2 ? "grid-cols-1 sm:grid-cols-2" :
-          visibleCount === 3 ? "grid-cols-1 sm:grid-cols-3" :
-          "grid-cols-1 sm:grid-cols-2"
-        }`}
-      >
-        {Array.from({ length: visibleCount }, (_, i) => (
-          <PoliticianSearchBox
-            key={i}
-            label={SLOT_LABELS[i] ?? `Perfil ${String.fromCharCode(65 + i)}`}
-            color={slotColors[i] ?? SLOT_COLORS[0]}
-            selected={slots[i] ?? null}
-            onSelect={(p) => setSlot(i, p)}
-            onRemoveSlot={i >= MIN_SLOTS ? () => removeSlot(i) : undefined}
-          />
-        ))}
-      </div>
-
-      {visibleCount < MAX_SLOTS && (
-        <button
-          onClick={addSlot}
-          className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
-        >
-          <Plus className="h-4 w-4" />
-          Adicionar político para comparação
-        </button>
-      )}
-
-      {!canCompare && (
-        <div className="mt-8 rounded-xl border border-dashed border-border p-12 text-center">
-          <Users className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">
-            {activePoliticians.length === 0
-              ? "Selecione ao menos dois políticos para iniciar a comparação."
-              : "Selecione mais um político para comparar."}
+    <div className="mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-10 text-center">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Comparar Políticos
+          </h1>
+          <p className="mt-3 text-muted-foreground">
+            Selecione de 2 a 4 políticos para ver uma comparação detalhada de scores por dimensão.
           </p>
         </div>
-      )}
 
-      {canCompare && (
-        <ComparisonPanel
-          politicians={activePoliticians}
-          colors={slotColors.slice(0, activePoliticians.length)}
-        />
-      )}
+        <div
+          className={`grid gap-4 ${
+            visibleCount === 1 ? "grid-cols-1" :
+            visibleCount === 2 ? "grid-cols-1 sm:grid-cols-2" :
+            visibleCount === 3 ? "grid-cols-1 sm:grid-cols-3" :
+            "grid-cols-1 sm:grid-cols-2"
+          }`}
+        >
+          {Array.from({ length: visibleCount }, (_, i) => (
+            <PoliticianSearchBox
+              key={i}
+              label={SLOT_LABELS[i] ?? `Perfil ${String.fromCharCode(65 + i)}`}
+              color={slotColors[i] ?? SLOT_COLORS[0]}
+              selected={slots[i] ?? null}
+              onSelect={(p) => setSlot(i, p)}
+              onRemoveSlot={i >= MIN_SLOTS ? () => removeSlot(i) : undefined}
+            />
+          ))}
+        </div>
+
+        {visibleCount < MAX_SLOTS && (
+          <button
+            onClick={addSlot}
+            className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar político para comparação
+          </button>
+        )}
+
+        {!canCompare && (
+          <div className="mt-8 rounded-xl border border-dashed border-border p-12 text-center">
+            <Users className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">
+              {activePoliticians.length === 0
+                ? "Selecione ao menos dois políticos para iniciar a comparação."
+                : "Selecione mais um político para comparar."}
+            </p>
+          </div>
+        )}
+
+        {canCompare && (
+          <ComparisonPanel
+            politicians={activePoliticians}
+            colors={slotColors.slice(0, activePoliticians.length)}
+          />
+        )}
+      </div>
     </div>
   );
 }

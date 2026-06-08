@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { useFeed } from "@/hooks/use-feed";
 import { PoliticianSpotlightCard } from "./politician-spotlight-card";
 import { NewsCard } from "./news-card";
@@ -23,7 +23,11 @@ function FeedCardRouter({ item }: { item: FeedItem }) {
   }
 }
 
-export function FeedList() {
+interface FeedListProps {
+  typeFilter?: string;
+}
+
+export function FeedList({ typeFilter }: FeedListProps = {}) {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeed();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +42,8 @@ export function FeedList() {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage]);
 
-  const allItems = data?.pages.flatMap((p) => p.data) ?? [];
+  const rawItems = data?.pages.flatMap((p) => p.data) ?? [];
+  const allItems = typeFilter ? rawItems.filter((item) => item.type === typeFilter) : rawItems;
 
   if (isLoading) {
     return (
@@ -84,7 +89,7 @@ export function FeedList() {
       >
         {allItems.map((item, idx) => (
           <div
-            key={item.id}
+            key={`${item.id}_${idx}`}
             style={{
               height: "calc(100dvh - 56px)",
               scrollSnapAlign: "start",
@@ -120,9 +125,8 @@ export function FeedList() {
       <div className="hidden sm:block">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {allItems.map((item, idx) => (
-            <>
+            <Fragment key={`${item.id}_${idx}`}>
               <div
-                key={item.id}
                 className="overflow-hidden rounded-2xl"
                 style={{ minHeight: 420 }}
               >
@@ -134,7 +138,7 @@ export function FeedList() {
                   <FeedAdSlotSkeleton />
                 </div>
               )}
-            </>
+            </Fragment>
           ))}
         </div>
 

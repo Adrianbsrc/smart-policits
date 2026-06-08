@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString, IsUrl } from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsString, IsUrl, Min } from "class-validator";
 import { Office } from "@smart-politics/db";
 
 export class CreatePoliticianDto {
@@ -27,4 +27,9 @@ export class CreatePoliticianDto {
   @IsString()
   @IsOptional()
   tseId?: string;
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  candidateNumber?: number;
 }

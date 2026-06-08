@@ -1,6 +1,6 @@
 import type { PartyIdeology } from "@smart-politics/db";
 
-import type { CamaraDeputado } from "../sources/camara/camara";
+import type { CamaraDeputado } from "../sources/camara/types";
 
 export interface NormalizedDeputado {
   camaraId: number;
@@ -47,6 +47,8 @@ const PARTY_COLORS: Record<string, string> = {
   PROS: "#E05D00",
   AGIR: "#FF8C00",
   CIDADANIA: "#0066CC",
+  PCB: "#8B0000",
+  PCO: "#B00000",
 };
 
 const PARTY_IDEOLOGY: Record<string, PartyIdeology> = {
@@ -77,6 +79,8 @@ const PARTY_IDEOLOGY: Record<string, PartyIdeology> = {
   PRTB: "right",
   DC: "right",
   PATRIOTA: "right",
+  PCB: "far_left",
+  PCO: "far_left",
 };
 
 // Display name for unknown parties (Câmara sigla → readable name when known)
@@ -108,6 +112,8 @@ const PARTY_NAMES: Record<string, string> = {
   PROS: "Partido Republicano da Ordem Social",
   AGIR: "Agir",
   CIDADANIA: "Cidadania",
+  PCB: "Partido Comunista Brasileiro",
+  PCO: "Partido da Causa Operária",
 };
 
 function slugify(text: string): string {
