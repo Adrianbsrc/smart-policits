@@ -7,6 +7,7 @@ import { ScoreRing } from "@/components/ui/score-ring";
 import { LiqPill } from "@/components/ui/liq-pill";
 import { PoliticianAvatar } from "@/components/politicians/politician-avatar";
 import type { RankedPolitician, PoliticianScore } from "@/lib/api/types";
+import { Routes } from "@/routes";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -91,7 +92,7 @@ export function PoliticianCard({ candidate, className }: PoliticianCardProps) {
         {/* Nome + badge */}
         <div className="flex flex-wrap items-center gap-1.5">
           <Link
-            href={`/perfil/${slug}`}
+            href={Routes.legacyPoliticianProfile(slug)}
             className="font-semibold leading-tight text-foreground transition-colors hover:text-primary"
           >
             {name}
@@ -151,13 +152,13 @@ export function PoliticianCard({ candidate, className }: PoliticianCardProps) {
         {/* Ações — desktop */}
         <div className="hidden flex-col gap-1.5 sm:flex">
           <Link
-            href={`/perfil/${slug}`}
+            href={Routes.legacyPoliticianProfile(slug)}
             className="inline-flex h-8 items-center justify-center rounded-lg border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted"
           >
             Ver perfil
           </Link>
           <Link
-            href={`/comparar?a=${slug}`}
+            href={Routes.compareStart(slug)}
             className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-primary/40 bg-primary/5 px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
           >
             <GitCompare className="h-3.5 w-3.5" />
@@ -167,7 +168,7 @@ export function PoliticianCard({ candidate, className }: PoliticianCardProps) {
 
         {/* Mobile — apenas "Ver" */}
         <Link
-          href={`/perfil/${slug}`}
+          href={Routes.legacyPoliticianProfile(slug)}
           className="inline-flex h-8 items-center justify-center rounded-lg border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:hidden"
         >
           Ver
@@ -216,7 +217,7 @@ export function PoliticianCardCompact({ candidate, className }: PoliticianCardPr
 
   return (
     <Link
-      href={`/perfil/${slug}`}
+      href={Routes.legacyPoliticianProfile(slug)}
       className={cn(
         "group flex items-center gap-3 rounded-xl border border-border bg-card/80 p-3 transition-all hover:border-border-strong hover:shadow-sm",
         className,

@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 
 import { loginUser } from "@/features/auth/auth.service";
 import { loginSchema, type LoginFormValues } from "@/features/auth/schemas";
+import { Routes } from "@/routes";
 
 export function LoginForm() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export function LoginForm() {
     setServerError(null);
     try {
       await loginUser(values.email, values.password);
-      router.replace("/dashboard");
+      router.replace(Routes.dashboard());
       router.refresh();
     } catch (err) {
       setServerError(err instanceof Error ? err.message : "Erro ao fazer login");
@@ -58,7 +59,7 @@ export function LoginForm() {
           <label htmlFor="password" className="text-sm font-medium text-foreground">
             Senha
           </label>
-          <Link href="/esqueci-senha" className="text-xs text-primary hover:underline">
+          <Link href={Routes.esqueciSenha()} className="text-xs text-primary hover:underline">
             Esqueci minha senha
           </Link>
         </div>

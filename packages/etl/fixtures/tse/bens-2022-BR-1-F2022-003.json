@@ -1,0 +1,32 @@
+{
+  "candidato": {
+    "id": "F2022-003",
+    "nome": "CIRO FERREIRA GOMES",
+    "nomeUrna": "CIRO GOMES",
+    "partido": { "numero": "12", "sigla": "PDT", "nome": "Partido Democrático Trabalhista" },
+    "totalDeBens": "R$ 3.100.000,00"
+  },
+  "lista": [
+    {
+      "ordem": "1",
+      "descricaoDeBem": "Participação societária",
+      "detalhesDoBem": "Quotas de sociedade empresária",
+      "valor": "2000000.00",
+      "tipoDeBem": { "codigo": "31", "descricao": "Participações societárias" }
+    },
+    {
+      "ordem": "2",
+      "descricaoDeBem": "Imóvel rural",
+      "detalhesDoBem": "Fazenda no Ceará",
+      "valor": "900000.00",
+      "tipoDeBem": { "codigo": "21", "descricao": "Imóvel rural" }
+    },
+    {
+      "ordem": "3",
+      "descricaoDeBem": "Outros bens",
+      "detalhesDoBem": "Obras de arte",
+      "valor": "200000.00",
+      "tipoDeBem": { "codigo": "99", "descricao": "Outros bens móveis" }
+    }
+  ]
+}

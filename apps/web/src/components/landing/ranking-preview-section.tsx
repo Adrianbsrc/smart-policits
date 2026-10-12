@@ -4,7 +4,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { LiqPill } from "@/components/ui/liq-pill";
 import { InitialsAvatar } from "@/components/politicians/politician-avatar";
-import { AdSlot } from "@/components/ui/ad-slot";
+import { Routes } from "@/routes";
 
 // ─── Static preview data ──────────────────────────────────────────────────────
 
@@ -44,7 +44,7 @@ export function RankingPreviewSection() {
             </p>
           </div>
           <Link
-            href="/ranking"
+            href={Routes.ranking()}
             className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-border glass px-4 text-[13px] font-medium text-foreground transition-colors hover:bg-muted/60"
           >
             Ver ranking completo
@@ -53,13 +53,14 @@ export function RankingPreviewSection() {
         </div>
 
         {/* List */}
-        <div className="flex flex-col gap-2">
+        <ol className="flex flex-col gap-2">
           {PREVIEW.map((c) => {
             const rankStyle = RANK_STYLE[c.rank - 1] ?? "bg-muted/40 text-muted-foreground font-semibold";
 
             return (
               <GlassCard
                 key={c.name}
+                as="li"
                 noPadding
                 className="flex items-center gap-3 px-4 py-3.5 transition-all hover:shadow-md"
               >
@@ -86,17 +87,7 @@ export function RankingPreviewSection() {
               </GlassCard>
             );
           })}
-        </div>
-
-        {/* Ad below ranking preview */}
-        <div className="mt-10">
-          <AdSlot
-            slot="home-rectangle"
-            format="rectangle"
-            note="300 × 250 · retângulo médio · abaixo do ranking preview"
-            className="mx-auto"
-          />
-        </div>
+        </ol>
       </div>
     </section>
   );

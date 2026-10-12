@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CATEGORY_VARIANTS, type BlogPost } from "@/lib/content/blog-posts";
+import { Routes } from "@/routes";
 
 interface BlogPostCardProps {
   post: BlogPost;
@@ -10,7 +11,7 @@ interface BlogPostCardProps {
 export function BlogPostCard({ post }: BlogPostCardProps) {
   return (
     <Link
-      href={`/blog/${post.slug}`}
+      href={Routes.blogPost(post.slug)}
       className="group flex flex-col gap-3 rounded-xl border border-border bg-background p-5 transition-all hover:border-border-strong hover:shadow-md"
     >
       <Badge variant={CATEGORY_VARIANTS[post.category] ?? "default"} className="w-fit">

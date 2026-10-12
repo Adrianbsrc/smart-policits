@@ -1,0 +1,32 @@
+{
+  "candidato": {
+    "id": "F2022-001",
+    "nome": "LUIZ INACIO LULA DA SILVA",
+    "nomeUrna": "LULA",
+    "partido": { "numero": "13", "sigla": "PT", "nome": "Partido dos Trabalhadores" },
+    "totalDeBens": "R$ 1.200.000,00"
+  },
+  "lista": [
+    {
+      "ordem": "1",
+      "descricaoDeBem": "Apartamento",
+      "detalhesDoBem": "Apartamento residencial em São Bernardo do Campo/SP",
+      "valor": "900000.00",
+      "tipoDeBem": { "codigo": "12", "descricao": "Apartamento" }
+    },
+    {
+      "ordem": "2",
+      "descricaoDeBem": "Veículo",
+      "detalhesDoBem": "Automóvel de passeio",
+      "valor": "120000.00",
+      "tipoDeBem": { "codigo": "41", "descricao": "Veículo automotor terrestre" }
+    },
+    {
+      "ordem": "3",
+      "descricaoDeBem": "Aplicação financeira",
+      "detalhesDoBem": "Fundo de investimento",
+      "valor": "180000.00",
+      "tipoDeBem": { "codigo": "51", "descricao": "Aplicação de renda fixa" }
+    }
+  ]
+}

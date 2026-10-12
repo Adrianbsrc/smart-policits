@@ -8,6 +8,7 @@ import { ProfileSearchDropdown } from "@/components/cola-eleitoral/profile-searc
 import { PrintCard } from "@/components/cola-eleitoral/print-card";
 import { useFollows } from "@/hooks/use-follows";
 import { useIsAuthenticated } from "@/hooks/use-session";
+import { Routes } from "@/routes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -146,7 +147,7 @@ export function ColaEleitoralClient() {
   function buildShareUrl(): string {
     const encoded = encodeCola(electionType, general, municipal);
     const base = typeof window !== "undefined" ? window.location.origin : "";
-    return `${base}/cola-eleitoral?lista=${encoded}`;
+    return `${base}${Routes.colaEleitoral()}?lista=${encoded}`;
   }
 
   async function handleShare() {
@@ -334,7 +335,7 @@ export function ColaEleitoralClient() {
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
           Crie uma conta para salvar sua cola permanentemente.{" "}
-          <a href="/cadastro" className="font-medium text-primary hover:text-primary/80">Criar conta grátis</a>
+          <a href={Routes.cadastro()} className="font-medium text-primary hover:text-primary/80">Criar conta grátis</a>
         </p>
       </div>
     </>

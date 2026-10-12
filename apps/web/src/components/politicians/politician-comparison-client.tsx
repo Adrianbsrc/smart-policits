@@ -12,6 +12,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { OFFICE_LABELS, SCORE_LABELS_FULL, SCORE_MAIN_KEYS, SCORE_EXTENDED_KEYS } from "@/lib/content/labels";
 import { FollowButton } from "@/components/politicians/follow-button";
 import type { PoliticianDetail, PoliticianScore, ScoreBreakdown } from "@/lib/api/types";
+import { Routes } from "@/routes";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -471,7 +472,7 @@ function ComparisonPanel({
                   className="w-full justify-center text-xs h-8 px-3"
                 />
                 <Link
-                  href={`/perfil/${p.slug}`}
+                  href={Routes.legacyPoliticianProfile(p.slug)}
                   className="flex items-center justify-center gap-1 text-xs hover:underline"
                   style={{ color: colors[i] }}
                 >
@@ -588,7 +589,7 @@ export function PoliticianComparisonClient() {
       if (p && param) params.set(param, p.slug);
     });
     const qs = params.toString();
-    router.replace(qs ? `/comparar?${qs}` : "/comparar", { scroll: false });
+    router.replace(qs ? `${Routes.compare()}?${qs}` : Routes.compare(), { scroll: false });
   }, [slots, visibleCount, router]);
 
   function setSlot(index: number, politician: PoliticianDetail | null) {

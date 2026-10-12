@@ -1,0 +1,10 @@
+{
+  "candidato": {
+    "id": "F2022-004",
+    "nome": "SIMONE NASSAR TEBET",
+    "nomeUrna": "SIMONE TEBET",
+    "partido": { "numero": "15", "sigla": "MDB", "nome": "Movimento Democrático Brasileiro" },
+    "totalDeBens": ""
+  },
+  "lista": []
+}

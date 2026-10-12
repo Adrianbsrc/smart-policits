@@ -5,6 +5,8 @@ import { ApiError } from "@/lib/api/client";
 import { PoliticianProfileClient } from "@/components/politicians/politician-profile-client";
 import { ProfileNav } from "@/components/politicians/profile-nav";
 import { OFFICE_LABELS } from "@/lib/content/labels";
+import { Routes } from "@/routes";
+import { buildMetadata } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -20,25 +22,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const title = `${politician.name} (${partyName}) | Smart Politics`;
     const description = `Perfil de ${politician.name} — ${officeName}${politician.state ? ` por ${politician.state}` : ""}.${score ? ` Nota geral: ${score.toFixed(1)}/10.` : ""} Veja histórico, scores e transparência.`;
 
-    return {
+    return buildMetadata({
       title,
       description,
-      openGraph: {
-        title,
-        description,
-        type: "profile",
-        ...(politician.photoUrl && { images: [{ url: politician.photoUrl, width: 400, height: 400, alt: politician.name }] }),
-      },
-      twitter: {
-        card: "summary",
-        title,
-        description,
-        ...(politician.photoUrl && { images: [politician.photoUrl] }),
-      },
-      alternates: {
-        canonical: `/perfil/${slug}`,
-      },
-    };
+      path: Routes.legacyPoliticianProfile(slug),
+      type: "profile",
+      ...(politician.photoUrl && {
+        image: { url: politician.photoUrl, width: 400, height: 400, alt: politician.name },
+      }),
+    });
   } catch {
     return {
       title: "Político não encontrado | Smart Politics",

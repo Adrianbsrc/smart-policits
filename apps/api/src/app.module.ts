@@ -23,6 +23,16 @@ import { TimelineModule } from "./modules/timeline/timeline.module";
 import { PromisesModule } from "./modules/promises/promises.module";
 import { ExpensesModule } from "./modules/expenses/expenses.module";
 import { AssetsModule } from "./modules/assets/assets.module";
+import { PoliticalProfilesModule } from "./modules/political-profiles/political-profiles.module";
+import { PoliticalPartiesModule } from "./modules/political-parties/political-parties.module";
+import { PoliticalOfficesModule } from "./modules/political-offices/political-offices.module";
+import { PoliticalAffiliationsModule } from "./modules/political-affiliations/political-affiliations.module";
+import { PoliticalTimelineModule } from "./modules/political-timeline/political-timeline.module";
+import { PoliticalPromisesModule } from "./modules/political-promises/political-promises.module";
+import { PoliticalIndicatorsModule } from "./modules/political-indicators/political-indicators.module";
+import { PoliticalIntegrityModule } from "./modules/political-integrity/political-integrity.module";
+import { PoliticalEvidenceModule } from "./modules/political-evidence/political-evidence.module";
+import { MandatesModule } from "./modules/mandates/mandates.module";
 
 @Module({
   imports: [
@@ -57,6 +67,16 @@ import { AssetsModule } from "./modules/assets/assets.module";
     PromisesModule,
     ExpensesModule,
     AssetsModule,
+    PoliticalProfilesModule,
+    PoliticalPartiesModule,
+    PoliticalOfficesModule,
+    PoliticalAffiliationsModule,
+    PoliticalTimelineModule,
+    PoliticalPromisesModule,
+    PoliticalIndicatorsModule,
+    PoliticalIntegrityModule,
+    PoliticalEvidenceModule,
+    MandatesModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CadastroForm } from "@/features/auth/cadastro-form";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Routes } from "@/routes";
 
 export const metadata: Metadata = {
   title: "Criar conta — Smart Politics",
@@ -28,7 +29,7 @@ export default function CadastroPage() {
         <div className="mt-5 border-t border-border/60 pt-4 text-center text-sm text-muted-foreground">
           Já tem conta?{" "}
           <Link
-            href="/login"
+            href={Routes.login()}
             className="font-semibold text-primary transition-colors hover:text-primary/80"
           >
             Entrar
@@ -39,11 +40,11 @@ export default function CadastroPage() {
       {/* Legal */}
       <p className="mt-5 text-center text-xs text-muted-foreground">
         Ao criar sua conta, você concorda com os{" "}
-        <Link href="/termos" className="underline underline-offset-4 hover:text-foreground">
+        <Link href={Routes.termos()} className="underline underline-offset-4 hover:text-foreground">
           Termos de Uso
         </Link>{" "}
         e{" "}
-        <Link href="/privacidade" className="underline underline-offset-4 hover:text-foreground">
+        <Link href={Routes.privacidade()} className="underline underline-offset-4 hover:text-foreground">
           Política de Privacidade
         </Link>
         .

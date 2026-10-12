@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 // ─── Formatos suportados ────────────────────────────────────────────────────
 
-const AD_FORMATS = {
+export const AD_FORMATS = {
   leaderboard:  { minH: "min-h-[90px]",  label: "728 × 90 · Leaderboard" },
   billboard:    { minH: "min-h-[250px]", label: "970 × 250 · Billboard" },
   "banner-wide":{ minH: "min-h-[110px]", label: "Responsivo · 970×90 / 728×90 / 320×50" },
@@ -18,7 +18,7 @@ const AD_FORMATS = {
   "mobile-rect":{ minH: "min-h-[250px]", label: "300 × 250 · Mobile rect", maxW: "max-w-[300px]" },
 } as const;
 
-type AdFormat = keyof typeof AD_FORMATS;
+export type AdFormat = keyof typeof AD_FORMATS;
 
 interface AdSlotProps {
   /** Identificador do slot para futura integração com AdSense */

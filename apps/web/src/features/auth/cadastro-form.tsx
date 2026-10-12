@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 
 import { registerUser } from "@/features/auth/auth.service";
 import { cadastroSchema, type CadastroFormValues } from "@/features/auth/schemas";
+import { Routes } from "@/routes";
 
 export function CadastroForm() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export function CadastroForm() {
     try {
       const { session } = await registerUser(values.name, values.email, values.password);
       if (session) {
-        router.replace("/dashboard");
+        router.replace(Routes.dashboard());
         router.refresh();
       } else {
         setEmailSent(true);
@@ -43,7 +44,7 @@ export function CadastroForm() {
         <p className="mt-2 text-sm text-muted-foreground">
           Enviamos um link de confirmação. Clique nele para ativar sua conta.
         </p>
-        <Link href="/login" className="mt-4 inline-block text-sm text-primary hover:underline">
+        <Link href={Routes.login()} className="mt-4 inline-block text-sm text-primary hover:underline">
           Ir para o login
         </Link>
       </div>
@@ -130,11 +131,11 @@ export function CadastroForm() {
 
       <p className="text-center text-xs text-muted-foreground">
         Ao criar uma conta, você concorda com nossos{" "}
-        <Link href="/termos" className="underline">
+        <Link href={Routes.termos()} className="underline">
           Termos de Uso
         </Link>{" "}
         e{" "}
-        <Link href="/privacidade" className="underline">
+        <Link href={Routes.privacidade()} className="underline">
           Política de Privacidade
         </Link>
         .

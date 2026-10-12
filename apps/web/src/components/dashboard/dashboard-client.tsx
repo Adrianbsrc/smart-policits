@@ -12,6 +12,7 @@ import { FollowButton } from "@/components/politicians/follow-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LiqPill } from "@/components/ui/liq-pill";
 import { AdSlot } from "@/components/ui/ad-slot";
+import { Routes } from "@/routes";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -117,14 +118,14 @@ export function DashboardClient() {
 
           <div className="flex shrink-0 flex-wrap gap-2">
             <Link
-              href="/ranking"
+              href={Routes.ranking()}
               className="inline-flex h-9 items-center gap-1.5 rounded-[12px] border border-border glass px-4 text-[13px] font-medium text-foreground transition-colors hover:bg-muted/60"
             >
               <Plus className="h-3.5 w-3.5" />
               Adicionar parlamentar
             </Link>
             <Link
-              href="/quiz"
+              href={Routes.quiz()}
               className="inline-flex h-9 items-center gap-1.5 rounded-[12px] bg-primary px-4 text-[13px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]"
             >
               Fazer Quiz Eleitoral
@@ -173,7 +174,7 @@ export function DashboardClient() {
             <GlassCard>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="font-semibold text-foreground">Seus seguidos</h2>
-                <Link href="/favoritos" className="text-[13px] font-medium text-primary hover:text-primary/80">
+                <Link href={Routes.favoritos()} className="text-[13px] font-medium text-primary hover:text-primary/80">
                   Ver favoritos →
                 </Link>
               </div>
@@ -190,7 +191,7 @@ export function DashboardClient() {
                     Você ainda não segue nenhum parlamentar.
                   </p>
                   <Link
-                    href="/ranking"
+                    href={Routes.ranking()}
                     className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-2 text-[13px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
                   >
                     <Plus className="h-3.5 w-3.5" />
@@ -205,7 +206,7 @@ export function DashboardClient() {
                     return (
                       <Link
                         key={f.id}
-                        href={`/perfil/${f.politician.slug}`}
+                        href={Routes.legacyPoliticianProfile(f.politician.slug)}
                         className="flex items-center gap-3 rounded-xl border border-border/60 bg-background/60 px-3 py-2.5 backdrop-blur-sm transition-all hover:border-border hover:bg-background"
                       >
                         <PoliticianAvatar
@@ -322,7 +323,7 @@ export function DashboardClient() {
               )}
 
               <Link
-                href="/feed"
+                href={Routes.feed()}
                 className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:text-primary/80"
               >
                 Abrir feed completo
@@ -343,7 +344,7 @@ export function DashboardClient() {
                 candidatos mais alinhados.
               </p>
               <Link
-                href="/quiz"
+                href={Routes.quiz()}
                 className="flex w-full items-center justify-center gap-1.5 rounded-[12px] bg-primary py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]"
               >
                 Fazer Quiz Eleitoral

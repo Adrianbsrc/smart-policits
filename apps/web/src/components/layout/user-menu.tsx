@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { LayoutDashboard, Heart, Settings, LogOut, ChevronDown } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { Routes } from "@/routes";
 import type { User } from "@supabase/supabase-js";
 
 interface UserMenuProps {
@@ -13,9 +14,9 @@ interface UserMenuProps {
 }
 
 const menuItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/favoritos", label: "Favoritos", icon: Heart },
-  { href: "/configuracoes", label: "Configurações", icon: Settings },
+  { href: Routes.dashboard(), label: "Dashboard", icon: LayoutDashboard },
+  { href: Routes.favoritos(), label: "Favoritos", icon: Heart },
+  { href: Routes.configuracoes(), label: "Configurações", icon: Settings },
 ] as const;
 
 export function UserMenu({ user }: UserMenuProps) {
@@ -39,7 +40,7 @@ export function UserMenu({ user }: UserMenuProps) {
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    router.push("/");
+    router.push(Routes.home());
     router.refresh();
   }
 

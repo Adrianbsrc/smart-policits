@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Zap } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Routes } from "@/routes";
 
 // ─── CtaSection ───────────────────────────────────────────────────────────────
 
@@ -28,14 +29,14 @@ export function CtaSection() {
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              href="/quiz"
+              href={Routes.quiz()}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-foreground px-8 text-[14px] font-semibold text-background shadow-lg transition-all hover:opacity-90 active:scale-[0.97]"
             >
               Fazer o Quiz Eleitoral
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/ranking"
+              href={Routes.ranking()}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] border border-border glass px-8 text-[14px] font-medium text-foreground transition-all hover:bg-muted/60 active:scale-[0.97]"
             >
               Ver ranking de políticos

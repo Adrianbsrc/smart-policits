@@ -1,19 +1,13 @@
 import Link from "next/link";
-import { ArrowRight, Timer, ShieldCheck } from "lucide-react";
+import { Suspense } from "react";
+import { ArrowRight, Timer } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { LiqPill } from "@/components/ui/liq-pill";
 import { InitialsAvatar } from "@/components/politicians/politician-avatar";
-import { AdSlot } from "@/components/ui/ad-slot";
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function getDaysUntilElection(): number {
-  const election = new Date("2026-10-04T00:00:00-03:00");
-  const now = new Date();
-  const diff = election.getTime() - now.getTime();
-  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-}
+import { Routes } from "@/routes";
+import { resolveElectionPhase } from "@/lib/election";
+import { HeroMetrics, HeroMetricsSkeleton } from "./hero-metrics";
 
 // ─── Dados do pódio (preview estático) ──────────────────────────────────────
 
@@ -21,12 +15,6 @@ const PODIUM = [
   { name: "Tabata Amaral",  role: "Dep. Federal", party: "PSB", state: "SP", score: 8.8, delta: +5 },
   { name: "Erika Hilton",   role: "Dep. Federal", party: "PSOL", state: "SP", score: 8.7, delta: +3 },
   { name: "Marina Silva",   role: "Senadora",      party: "REDE", state: "AC", score: 8.4, delta: +2 },
-] as const;
-
-const METRICS = [
-  { value: "594",  label: "parlamentares" },
-  { value: "12",   label: "fontes de dados" },
-  { value: "0",    label: "viés político" },
 ] as const;
 
 // ─── PodiumCard ───────────────────────────────────────────────────────────────
@@ -80,7 +68,7 @@ function PodiumCard() {
       </div>
 
       <Link
-        href="/ranking"
+        href={Routes.ranking()}
         className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2.5 text-[12.5px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
       >
         Ver ranking completo
@@ -93,7 +81,7 @@ function PodiumCard() {
 // ─── HeroSection ─────────────────────────────────────────────────────────────
 
 export function HeroSection() {
-  const daysLeft = getDaysUntilElection();
+  const electionPhase = resolveElectionPhase(new Date());
 
   return (
     <section className="relative overflow-hidden">
@@ -112,7 +100,7 @@ export function HeroSection() {
             <div className="mb-6 flex flex-wrap items-center gap-2">
               <LiqPill tone="accent">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                Eleições 2026 · {daysLeft} dias
+                {electionPhase.label}
               </LiqPill>
               <LiqPill tone="neutral">
                 <Timer className="h-3 w-3" />
@@ -130,53 +118,37 @@ export function HeroSection() {
 
             {/* Sub */}
             <p className="mt-5 max-w-lg text-[18px] leading-relaxed text-muted-foreground">
-              594 parlamentares avaliados em 5 pilares com dados públicos do Congresso, TSE e tribunais.
+              Políticos avaliados em 5 pilares com dados públicos do Congresso, TSE e tribunais.
               Sem opinião, sem inclinação partidária.
             </p>
 
             {/* CTAs */}
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/quiz"
+                href={Routes.quiz()}
                 className="inline-flex h-12 items-center gap-2 rounded-[14px] bg-foreground px-6 text-[14px] font-semibold text-background shadow-lg transition-all duration-150 hover:opacity-90 active:scale-[0.97]"
               >
                 Começar pelo quiz
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/ranking"
+                href={Routes.ranking()}
                 className="inline-flex h-12 items-center gap-2 rounded-[14px] border border-border glass px-6 text-[14px] font-semibold text-foreground transition-all duration-150 hover:bg-muted/60 active:scale-[0.97]"
               >
                 Explorar ranking
               </Link>
             </div>
 
-            {/* Métricas */}
-            <div className="mt-10 flex flex-wrap gap-8 border-t border-border/60 pt-8">
-              {METRICS.map((m) => (
-                <div key={m.label}>
-                  <p className="font-display text-[2rem] font-bold tracking-tight text-foreground">{m.value}</p>
-                  <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {m.label}
-                  </p>
-                </div>
-              ))}
-            </div>
+            {/* Métricas — dinâmicas, ver docs/SPECs/home.md#estratégia-de-métricas-dinâmicas */}
+            <Suspense fallback={<HeroMetricsSkeleton />}>
+              <HeroMetrics />
+            </Suspense>
           </div>
 
           {/* Coluna direita — pódio */}
           <div className="lg:pl-4">
             <PodiumCard />
           </div>
-        </div>
-
-        {/* ── Billboard ad ── */}
-        <div className="mt-12">
-          <AdSlot
-            slot="home-billboard"
-            format="billboard"
-            note="970 × 250 · slot principal acima da dobra · alta visibilidade"
-          />
         </div>
       </div>
     </section>

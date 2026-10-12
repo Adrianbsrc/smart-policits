@@ -8,6 +8,7 @@ import { useAlerts, useMarkAllAlertsRead, useMarkAlertRead, useUnreadAlertCount 
 import { useClickOutside } from "@/hooks/use-click-outside";
 import type { Alert } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
+import { Routes } from "@/routes";
 
 function AlertItem({ alert, onRead }: { alert: Alert; onRead: (id: string) => void }) {
   const isScoreChange = alert.type === "score_change";
@@ -41,7 +42,7 @@ function AlertItem({ alert, onRead }: { alert: Alert; onRead: (id: string) => vo
         <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{alert.body}</p>
         {alert.politician && (
           <Link
-            href={`/perfil/${alert.politician.slug}`}
+            href={Routes.legacyPoliticianProfile(alert.politician.slug)}
             className="mt-1 inline-block text-xs font-medium text-primary hover:text-primary/80"
             onClick={() => !alert.read && onRead(alert.id)}
           >

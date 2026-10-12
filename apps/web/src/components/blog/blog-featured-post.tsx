@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CATEGORY_VARIANTS, type BlogPost } from "@/lib/content/blog-posts";
+import { Routes } from "@/routes";
 
 interface BlogFeaturedPostProps {
   post: BlogPost;
@@ -10,7 +11,7 @@ interface BlogFeaturedPostProps {
 export function BlogFeaturedPost({ post }: BlogFeaturedPostProps) {
   return (
     <Link
-      href={`/blog/${post.slug}`}
+      href={Routes.blogPost(post.slug)}
       className="group mb-10 block overflow-hidden rounded-2xl border border-border bg-background transition-all hover:border-border-strong hover:shadow-lg"
     >
       <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-start">

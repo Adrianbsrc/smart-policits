@@ -1,0 +1,51 @@
+{
+  "candidatos": [
+    {
+      "id": "F2022-001",
+      "numero": "13",
+      "nome": "LUIZ INACIO LULA DA SILVA",
+      "nomeUrna": "LULA",
+      "descricaoSexo": "MASCULINO",
+      "partido": { "numero": "13", "sigla": "PT", "nome": "Partido dos Trabalhadores" },
+      "cargo": { "codigo": "1", "nome": "Presidente" },
+      "totalDeBens": "R$ 1.200.000,00",
+      "situacao": { "codigo": "2", "nome": "APTO" }
+    },
+    {
+      "id": "F2022-002",
+      "numero": "22",
+      "nome": "JAIR MESSIAS BOLSONARO",
+      "nomeUrna": "JAIR BOLSONARO",
+      "descricaoSexo": "MASCULINO",
+      "partido": { "numero": "22", "sigla": "PL", "nome": "Partido Liberal" },
+      "cargo": { "codigo": "1", "nome": "Presidente" },
+      "totalDeBens": "R$ 2.500.000,00",
+      "situacao": { "codigo": "2", "nome": "APTO" }
+    },
+    {
+      "id": "F2022-003",
+      "numero": "12",
+      "nome": "CIRO FERREIRA GOMES",
+      "nomeUrna": "CIRO GOMES",
+      "descricaoSexo": "MASCULINO",
+      "partido": { "numero": "12", "sigla": "PDT", "nome": "Partido Democrático Trabalhista" },
+      "cargo": { "codigo": "1", "nome": "Presidente" },
+      "totalDeBens": "R$ 3.100.000,00",
+      "situacao": { "codigo": "2", "nome": "APTO" }
+    },
+    {
+      "id": "F2022-004",
+      "numero": "15",
+      "nome": "SIMONE NASSAR TEBET",
+      "nomeUrna": "SIMONE TEBET",
+      "descricaoSexo": "FEMININO",
+      "partido": { "numero": "15", "sigla": "MDB", "nome": "Movimento Democrático Brasileiro" },
+      "cargo": { "codigo": "1", "nome": "Presidente" },
+      "totalDeBens": "",
+      "situacao": { "codigo": "2", "nome": "APTO" }
+    }
+  ],
+  "paginaAtual": 1,
+  "totalDeElementos": 4,
+  "totalDePaginas": 1
+}

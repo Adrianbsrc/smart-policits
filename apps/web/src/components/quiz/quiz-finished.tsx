@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle } from "lucide-react";
+import { Routes } from "@/routes";
 
 interface QuizFinishedProps {
   answersCount: number;
@@ -26,7 +27,7 @@ export function QuizFinished({ answersCount, total, onViewResult }: QuizFinished
         Ver meu resultado
         <ArrowRight className="h-4 w-4" />
       </button>
-      <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
+      <Link href={Routes.home()} className="text-sm text-muted-foreground hover:text-foreground">
         Voltar ao início
       </Link>
     </div>

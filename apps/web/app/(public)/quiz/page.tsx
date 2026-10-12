@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { QuizFinished } from "@/components/quiz/quiz-finished";
 import { QUIZ_QUESTIONS } from "@/lib/content/quiz-questions";
+import { Routes } from "@/routes";
 
 export default function QuizPage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function QuizPage() {
       <QuizFinished
         answersCount={Object.keys(answers).length}
         total={total}
-        onViewResult={() => router.push("/resultado")}
+        onViewResult={() => router.push(Routes.quizResult())}
       />
     );
   }
@@ -54,7 +55,7 @@ export default function QuizPage() {
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link href={Routes.home()} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Link>

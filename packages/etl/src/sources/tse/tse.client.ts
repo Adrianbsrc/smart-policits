@@ -29,8 +29,10 @@ export function parseTseValue(raw: string): number {
   return isNaN(value) ? 0 : value;
 }
 
+export type TseAssetCategory = "imovel" | "veiculo" | "investimento" | "empresa" | "dinheiro" | "outros";
+
 /** Normaliza o tipo de bem TSE para ExpenseCategory do nosso schema. */
-export function normalizeTipoAtivo(descricao: string): string {
+export function normalizeTipoAtivo(descricao: string): TseAssetCategory {
   const d = descricao.toLowerCase();
   if (d.includes("imóvel") || d.includes("imovel") || d.includes("terreno")) return "imovel";
   if (d.includes("veículo") || d.includes("veiculo") || d.includes("automóvel")) return "veiculo";

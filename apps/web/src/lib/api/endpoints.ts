@@ -16,6 +16,21 @@ export const ENDPOINTS = {
     list: "/parties",
     detail: (acronym: string) => `/parties/${acronym}`,
   },
+  politicalProfiles: {
+    list: "/profiles",
+    detail: (slug: string) => `/profiles/${slug}`,
+    mandates: (slug: string) => `/profiles/${slug}/mandates`,
+    affiliations: (slug: string) => `/profiles/${slug}/affiliations`,
+    executiveSummary: (slug: string) => `/profiles/${slug}/executive-summary`,
+    timeline: (slug: string) => `/profiles/${slug}/timeline`,
+    promises: (slug: string) => `/profiles/${slug}/promises`,
+    indicators: (slug: string) => `/profiles/${slug}/indicators`,
+    integrity: (slug: string) => `/profiles/${slug}/integrity`,
+    evidences: (slug: string) => `/profiles/${slug}/evidences`,
+  },
+  evidences: {
+    detail: (id: string) => `/evidences/${id}`,
+  },
   users: {
     create: "/users",
     me: "/users/me",

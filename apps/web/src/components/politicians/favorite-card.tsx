@@ -5,6 +5,7 @@ import { ScoreRing } from "@/components/ui/score-ring";
 import { GlassCard } from "@/components/ui/glass-card";
 import { OFFICE_LABELS } from "@/lib/content/labels";
 import type { FollowedPolitician } from "@/lib/api/types";
+import { Routes } from "@/routes";
 
 interface FavoriteCardProps {
   follow: FollowedPolitician;
@@ -23,7 +24,7 @@ export function FavoriteCard({ follow: f }: FavoriteCardProps) {
 
       <div className="min-w-0 flex-1">
         <Link
-          href={`/perfil/${f.politician.slug}`}
+          href={Routes.legacyPoliticianProfile(f.politician.slug)}
           className="text-sm font-semibold text-foreground transition-colors hover:text-primary"
         >
           {f.politician.name}
@@ -39,7 +40,7 @@ export function FavoriteCard({ follow: f }: FavoriteCardProps) {
 
       <div className="flex shrink-0 flex-col items-center gap-1.5">
         <Link
-          href={`/perfil/${f.politician.slug}`}
+          href={Routes.legacyPoliticianProfile(f.politician.slug)}
           className="inline-flex h-7 items-center rounded-lg border border-border px-2.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           Ver perfil

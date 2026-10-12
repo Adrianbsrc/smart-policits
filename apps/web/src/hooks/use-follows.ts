@@ -4,11 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "@/lib/api/client";
 import { followsService } from "@/lib/api/services/follows.service";
+import { Routes } from "@/routes";
 
 export const FOLLOWS_KEY = ["follows"] as const;
 
 function redirectToLogin() {
-  window.location.href = "/login";
+  window.location.href = Routes.login();
 }
 
 export function useFollows() {

@@ -20,6 +20,9 @@ import { LiqPill } from "@/components/ui/liq-pill";
 import { AdSlot } from "@/components/ui/ad-slot";
 import { OFFICE_LABELS, SCORE_LABELS_FULL, SCORE_MAIN_KEYS, SCORE_EXTENDED_KEYS } from "@/lib/content/labels";
 import type { PoliticianScore, PenaltyRecord, ScoreBreakdown, PoliticalEvent, ScoreEvidence as ScoreEvidenceType, PublicExpense, ExpenseSummary } from "@/lib/api/types";
+import { Routes } from "@/routes";
+import { buildPersonJsonLd } from "@/lib/seo";
+import { JsonLdScript } from "@/components/seo/json-ld-script";
 
 interface Props { slug: string }
 type Tab = "overview" | "scores" | "timeline" | "historico" | "gastos" | "propostas";
@@ -121,7 +124,7 @@ export function PoliticianProfileClient({ slug }: Props) {
       <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-12 text-center">
         <p className="text-base font-medium text-destructive">Político não encontrado</p>
         <p className="mt-2 text-sm text-muted-foreground">O perfil pode ter sido removido ou o endereço está incorreto.</p>
-        <Link href="/ranking" className="mt-4 inline-flex text-sm text-primary hover:underline">Ver todos os políticos</Link>
+        <Link href={Routes.ranking()} className="mt-4 inline-flex text-sm text-primary hover:underline">Ver todos os políticos</Link>
       </div>
     );
   }
@@ -132,30 +135,25 @@ export function PoliticianProfileClient({ slug }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Person",
-            name,
-            description: bio,
-            image: photoUrl,
-            jobTitle: OFFICE_LABELS[office] ?? office,
-            affiliation: party ? { "@type": "Organization", name: party.name } : undefined,
-          }),
-        }}
+      <JsonLdScript
+        data={buildPersonJsonLd({
+          name,
+          path: Routes.legacyPoliticianProfile(slug),
+          ...(bio && { description: bio }),
+          ...(photoUrl && { image: photoUrl }),
+          jobTitle: OFFICE_LABELS[office] ?? office,
+          ...(party && { affiliation: party.name }),
+        })}
       />
 
       {/* Breadcrumb + actions */}
       <div className="mb-6 flex items-center justify-between">
-        <Link href="/ranking" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link href={Routes.ranking()} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />
           Ranking
         </Link>
         <Link
-          href={`/comparar?a=${slug}`}
+          href={Routes.compareStart(slug)}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
           <GitCompare className="h-3.5 w-3.5" />
@@ -385,7 +383,7 @@ function OverviewTab({ score, bio, party, isMock }: { score: Score; bio: string 
         <GlassCard>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">Os cinco pilares</h2>
-            <Link href="/metodologia" className="text-xs text-primary hover:underline">metodologia →</Link>
+            <Link href={Routes.methodology()} className="text-xs text-primary hover:underline">metodologia →</Link>
           </div>
           {isMock ? (
             <div className="rounded-xl bg-muted/50 px-3 py-4 text-center">
@@ -572,7 +570,7 @@ function ScoresTab({
       <GlassCard>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-semibold text-foreground">Fontes utilizadas</h2>
-          <Link href="/metodologia" className="text-xs text-primary hover:underline">ver metodologia →</Link>
+          <Link href={Routes.methodology()} className="text-xs text-primary hover:underline">ver metodologia →</Link>
         </div>
         <p className="mb-3 text-xs text-muted-foreground">
           Todos os dados desta avaliação são extraídos exclusivamente de fontes institucionais oficiais.

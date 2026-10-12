@@ -9,6 +9,7 @@ import { FavoriteCard } from "@/components/politicians/favorite-card";
 import { AdSlot } from "@/components/ui/ad-slot";
 import { useFollows } from "@/hooks/use-follows";
 import type { FollowedPolitician } from "@/lib/api/types";
+import { Routes } from "@/routes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -104,7 +105,7 @@ export function FavoritosClient() {
               </button>
             )}
             <Link
-              href="/ranking"
+              href={Routes.ranking()}
               className="inline-flex items-center gap-1.5 rounded-[12px] bg-primary px-3 py-2 text-[13px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -120,7 +121,7 @@ export function FavoritosClient() {
             description="Explore o ranking e siga os parlamentares que mais te interessam."
             action={
               <Link
-                href="/ranking"
+                href={Routes.ranking()}
                 className="inline-flex h-9 items-center gap-1.5 rounded-[12px] bg-primary px-5 text-[13px] font-semibold text-white hover:opacity-90"
               >
                 Ver ranking

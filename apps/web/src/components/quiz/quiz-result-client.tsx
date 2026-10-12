@@ -10,6 +10,7 @@ import { ScoreBar } from "@/components/ui/score-bar";
 import { Badge } from "@/components/ui/badge";
 import type { QuizMatch, DimensionWeights } from "@/lib/api/types";
 import { OFFICE_LABELS, SCORE_LABELS_FULL } from "@/lib/content/labels";
+import { Routes } from "@/routes";
 
 const DIMENSION_LABELS: Record<keyof DimensionWeights, string> = {
   education: "Educação",
@@ -99,7 +100,7 @@ function MatchCard({ match, rank }: { match: QuizMatch; rank: number }) {
 
       <div className="mt-4 flex items-center justify-end">
         <Link
-          href={`/perfil/${match.slug}`}
+          href={Routes.legacyPoliticianProfile(match.slug)}
           className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80"
         >
           Ver perfil completo
@@ -136,7 +137,7 @@ export function QuizResultClient() {
   function handleRetake() {
     sessionStorage.removeItem("quiz_answers");
     deleteResult(undefined, {
-      onSuccess: () => router.push("/quiz"),
+      onSuccess: () => router.push(Routes.quiz()),
     });
   }
 
@@ -151,14 +152,14 @@ export function QuizResultClient() {
         ) : isError ? (
           <>
             <p className="font-semibold text-foreground">Não foi possível carregar o resultado.</p>
-            <Link href="/quiz" className="text-sm text-primary hover:text-primary/80">
+            <Link href={Routes.quiz()} className="text-sm text-primary hover:text-primary/80">
               Refazer o quiz
             </Link>
           </>
         ) : (
           <>
             <p className="font-semibold text-foreground">Nenhuma resposta encontrada.</p>
-            <Link href="/quiz" className="text-sm text-primary hover:text-primary/80">
+            <Link href={Routes.quiz()} className="text-sm text-primary hover:text-primary/80">
               Fazer o quiz
             </Link>
           </>
@@ -210,7 +211,7 @@ export function QuizResultClient() {
       {/* CTAs */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Link
-          href="/cadastro"
+          href={Routes.cadastro()}
           className="flex flex-col items-center gap-2 rounded-xl border border-border bg-background p-4 text-center transition-all hover:border-border-strong hover:shadow-sm"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
@@ -220,7 +221,7 @@ export function QuizResultClient() {
           <p className="text-xs text-muted-foreground">Salve seu resultado e acompanhe candidatos</p>
         </Link>
         <Link
-          href="/cola-eleitoral"
+          href={Routes.colaEleitoral()}
           className="flex flex-col items-center gap-2 rounded-xl border border-border bg-background p-4 text-center transition-all hover:border-border-strong hover:shadow-sm"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/10">
@@ -254,7 +255,7 @@ export function QuizResultClient() {
       </div>
 
       <div className="mt-8 flex flex-col items-center gap-4 text-center">
-        <Link href="/ranking" className="text-sm font-medium text-primary hover:text-primary/80">
+        <Link href={Routes.ranking()} className="text-sm font-medium text-primary hover:text-primary/80">
           Ver ranking completo →
         </Link>
         <button

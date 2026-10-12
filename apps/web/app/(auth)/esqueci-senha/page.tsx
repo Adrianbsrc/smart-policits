@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { EsqueciSenhaForm } from "@/features/auth/esqueci-senha-form";
+import { Routes } from "@/routes";
 
 export const metadata: Metadata = {
   title: "Recuperar senha — Smart Politics",
@@ -24,7 +25,7 @@ export default function EsqueciSenhaPage() {
 
       <div className="mt-6 text-center">
         <Link
-          href="/login"
+          href={Routes.login()}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />

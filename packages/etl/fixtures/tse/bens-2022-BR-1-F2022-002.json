@@ -1,0 +1,25 @@
+{
+  "candidato": {
+    "id": "F2022-002",
+    "nome": "JAIR MESSIAS BOLSONARO",
+    "nomeUrna": "JAIR BOLSONARO",
+    "partido": { "numero": "22", "sigla": "PL", "nome": "Partido Liberal" },
+    "totalDeBens": "R$ 2.500.000,00"
+  },
+  "lista": [
+    {
+      "ordem": "1",
+      "descricaoDeBem": "Casa",
+      "detalhesDoBem": "Imóvel residencial no Rio de Janeiro/RJ",
+      "valor": "1800000.00",
+      "tipoDeBem": { "codigo": "11", "descricao": "Casa" }
+    },
+    {
+      "ordem": "2",
+      "descricaoDeBem": "Numerário",
+      "detalhesDoBem": "Dinheiro em espécie",
+      "valor": "700000.00",
+      "tipoDeBem": { "codigo": "65", "descricao": "Depósito bancário em conta corrente no exterior" }
+    }
+  ]
+}

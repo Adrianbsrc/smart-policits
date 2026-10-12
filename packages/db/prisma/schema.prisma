@@ -440,6 +440,212 @@ model AssetDeclaration {
   @@map("asset_declarations")
 }
 
+enum PoliticalProfileStatus {
+  pre_candidate // declarou interesse, não registrado oficialmente
+  candidate     // registrado para eleição
+  elected       // eleito, ainda não empossado
+  in_mandate    // em exercício de mandato
+  former        // ex-mandatário
+  inactive      // inativo
+}
+
+enum PoliticalOfficeType {
+  president
+  governor
+  mayor
+  senator
+  federal_deputy
+  state_deputy
+}
+
+enum PoliticalOfficeScope {
+  national
+  state
+  municipal
+}
+
+enum ElectoralResult {
+  elected
+  runner_up
+  not_elected
+}
+
+model PoliticalProfile {
+  id              String                 @id @default(cuid())
+  slug            String                 @unique
+  fullName        String                 @map("full_name")
+  displayName     String                 @map("display_name")
+  biography       String?                @db.Text
+  photo           String?
+  birthDate       DateTime?              @map("birth_date")
+  birthPlace      String?                @map("birth_place")
+  currentOfficeId String?                @map("current_office_id")
+  status          PoliticalProfileStatus @default(candidate)
+  isCandidate     Boolean                @default(true) @map("is_candidate")
+  isIncumbent     Boolean                @default(false) @map("is_incumbent")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+
+  currentOffice PoliticalOffice?        @relation(fields: [currentOfficeId], references: [id])
+  affiliations  PoliticalAffiliation[]
+  mandates      Mandate[]
+  viceMandates  Mandate[]                @relation("MandateVice")
+  evidences     Evidence[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([currentOfficeId])
+  @@index([displayName])
+  @@map("political_profiles")
+}
+
+model PoliticalParty {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  acronym String  @unique
+  number  Int?
+  logo    String?
+
+  affiliations PoliticalAffiliation[]
+
+  @@map("political_parties")
+}
+
+/// Histórico de filiações partidárias de um PoliticalProfile.
+/// Regra de negócio (aplicada na camada de service): no máximo uma
+/// afiliação com isCurrent=true por profileId — nunca apagar histórico.
+model PoliticalAffiliation {
+  id        String    @id @default(cuid())
+  profileId String    @map("profile_id")
+  partyId   String    @map("party_id")
+  startDate DateTime  @map("start_date")
+  endDate   DateTime? @map("end_date")
+  isCurrent Boolean   @default(false) @map("is_current")
+  reason    String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  profile PoliticalProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  party   PoliticalParty   @relation(fields: [partyId], references: [id])
+
+  @@index([profileId])
+  @@index([partyId])
+  @@map("political_affiliations")
+}
+
+model PoliticalOffice {
+  id        String                @id @default(cuid())
+  type      PoliticalOfficeType   @unique
+  name      String
+  scope     PoliticalOfficeScope
+  termYears Int                   @map("term_years")
+
+  profiles PoliticalProfile[]
+  mandates Mandate[]
+
+  @@map("political_offices")
+}
+
+model Mandate {
+  id              String           @id @default(cuid())
+  profileId       String           @map("profile_id")
+  officeId        String           @map("office_id")
+  startDate       DateTime         @map("start_date")
+  endDate         DateTime?        @map("end_date")
+  reelected       Boolean          @default(false)
+  description     String?          @db.Text
+  electionYear    Int?             @map("election_year")
+  electionRound   Int?             @map("election_round")
+  votes           Int?
+  electoralResult ElectoralResult? @map("electoral_result")
+  startReason     String?          @map("start_reason")
+  endReason       String?          @map("end_reason")
+  viceProfileId   String?          @map("vice_profile_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  profile     PoliticalProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  office      PoliticalOffice   @relation(fields: [officeId], references: [id])
+  viceProfile PoliticalProfile? @relation("MandateVice", fields: [viceProfileId], references: [id])
+  evidences   Evidence[]
+
+  @@index([profileId])
+  @@index([officeId])
+  @@index([electionYear])
+  @@map("mandates")
+}
+
+enum EvidenceCategory {
+  biography
+  professional_career
+  political_career
+  government_program
+  promise
+  public_expense
+  asset
+  indicator
+  government_decision
+  appointment
+  law
+  decree
+  interview
+  public_statement
+  investigation
+  judicial_decision
+  audit
+  transparency
+  historical_event
+  external_event
+}
+
+enum EvidenceImpact {
+  critical
+  high
+  medium
+  low
+}
+
+enum EvidenceReliability {
+  official
+  high
+  medium
+  low
+}
+
+/// Menor unidade de informação verificável do domínio PoliticalProfile
+/// (docs/SPECs/core/evidence.md). `sources`/`contexts`/`attachments` ficam em
+/// JSON nesta primeira persistência — nenhuma feature hoje precisa
+/// consultá-los isoladamente fora de uma Evidence; normalizar em tabelas
+/// próprias é evolução futura, não uma arquitetura nova exigida agora.
+model Evidence {
+  id                 String              @id @default(cuid())
+  politicalProfileId String              @map("political_profile_id")
+  mandateId          String?             @map("mandate_id")
+  title              String
+  summary            String
+  description        String              @db.Text
+  occurredAt         DateTime            @map("occurred_at")
+  publishedAt        DateTime?           @map("published_at")
+  categories         EvidenceCategory[]
+  impact             EvidenceImpact
+  reliability        EvidenceReliability
+  sources            Json
+  contexts           Json                @default("[]")
+  attachments        Json                @default("[]")
+  tags               String[]
+  metadata           Json                @default("{}")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  profile PoliticalProfile @relation(fields: [politicalProfileId], references: [id], onDelete: Cascade)
+  mandate Mandate?         @relation(fields: [mandateId], references: [id], onDelete: SetNull)
+
+  @@index([politicalProfileId])
+  @@index([mandateId])
+  @@index([occurredAt])
+  @@map("evidences")
+}
+
 model Interpretation {
   id            String   @id @default(cuid())
   /** SHA-256 truncado do input — garante deduplicação por conteúdo */

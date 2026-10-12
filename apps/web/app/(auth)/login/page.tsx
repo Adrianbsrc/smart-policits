@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/features/auth/login-form";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Routes } from "@/routes";
 
 export const metadata: Metadata = {
   title: "Entrar — Smart Politics",
@@ -28,7 +29,7 @@ export default function LoginPage() {
         <div className="mt-5 border-t border-border/60 pt-4 text-center text-sm text-muted-foreground">
           Não tem conta?{" "}
           <Link
-            href="/cadastro"
+            href={Routes.cadastro()}
             className="font-semibold text-primary transition-colors hover:text-primary/80"
           >
             Criar conta grátis
@@ -39,11 +40,11 @@ export default function LoginPage() {
       {/* Legal */}
       <p className="mt-5 text-center text-xs text-muted-foreground">
         Ao entrar você concorda com os{" "}
-        <Link href="/termos" className="underline underline-offset-4 hover:text-foreground">
+        <Link href={Routes.termos()} className="underline underline-offset-4 hover:text-foreground">
           Termos de Uso
         </Link>{" "}
         e{" "}
-        <Link href="/privacidade" className="underline underline-offset-4 hover:text-foreground">
+        <Link href={Routes.privacidade()} className="underline underline-offset-4 hover:text-foreground">
           Política de Privacidade
         </Link>
         .

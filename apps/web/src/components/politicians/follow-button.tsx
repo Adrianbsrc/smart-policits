@@ -7,6 +7,7 @@ import { Heart, LogIn } from "lucide-react";
 import { useIsAuthenticated } from "@/hooks/use-session";
 import { useFollow, useFollowStatus, useUnfollow } from "@/hooks/use-follows";
 import { cn } from "@/lib/utils";
+import { Routes } from "@/routes";
 
 interface FollowButtonProps {
   candidateId: string;
@@ -46,7 +47,7 @@ export function FollowButton({ candidateId, variant = "full", className }: Follo
     }
     return (
       <Link
-        href="/login"
+        href={Routes.login()}
         className={cn(
           "inline-flex h-9 items-center gap-2 rounded-md border border-border px-4 text-sm font-semibold text-muted-foreground transition-all hover:bg-muted",
           className,
@@ -117,7 +118,7 @@ function AuthPromptTooltip({ onClose }: { onClose: () => void }) {
       <p className="mb-3 text-sm text-foreground">Faça login para seguir políticos.</p>
       <div className="flex gap-2">
         <Link
-          href="/login"
+          href={Routes.login()}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
         >
           <LogIn className="h-3.5 w-3.5" />

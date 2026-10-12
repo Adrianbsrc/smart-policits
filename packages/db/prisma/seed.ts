@@ -10,43 +10,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 import { SCORE_VERSION } from "../../scoring/index";
 import { GOVERNORS_SEED, PRESIDENTS_SEED } from "../../etl/src/seeds/politicians";
+import { PARTY_META, slugify } from "./seed-shared";
+import { seedPoliticalProfiles } from "./seed-political-profiles";
 
 const adapter = new PrismaPg({ connectionString: process.env["DATABASE_URL"]! });
 const prisma = new PrismaClient({ adapter });
 
-function slugify(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
-}
-
 const ALL_SEEDS = [...GOVERNORS_SEED, ...PRESIDENTS_SEED];
-
-const PARTY_META: Record<string, { name: string; colorHex: string; ideology: string }> = {
-  PT:           { name: "Partido dos Trabalhadores",                   colorHex: "#CC0000", ideology: "left" },
-  PL:           { name: "Partido Liberal",                             colorHex: "#003580", ideology: "right" },
-  "UNIÃO":      { name: "União Brasil",                                colorHex: "#002868", ideology: "center_right" },
-  MDB:          { name: "Movimento Democrático Brasileiro",            colorHex: "#0D6EFD", ideology: "center" },
-  PP:           { name: "Progressistas",                               colorHex: "#005EA6", ideology: "center_right" },
-  PSD:          { name: "Partido Social Democrático",                  colorHex: "#009C3B", ideology: "center" },
-  PSDB:         { name: "Partido da Social Democracia Brasileira",     colorHex: "#006DB3", ideology: "center_right" },
-  PSB:          { name: "Partido Socialista Brasileiro",               colorHex: "#E8003D", ideology: "center_left" },
-  PDT:          { name: "Partido Democrático Trabalhista",             colorHex: "#006D77", ideology: "left" },
-  REPUBLICANOS: { name: "Republicanos",                               colorHex: "#0B6623", ideology: "center_right" },
-  NOVO:         { name: "Partido Novo",                               colorHex: "#FF6600", ideology: "right" },
-  PSOL:         { name: "Partido Socialismo e Liberdade",             colorHex: "#FFCC00", ideology: "far_left" },
-  SOLIDARIEDADE:{ name: "Solidariedade",                              colorHex: "#00B0F0", ideology: "center_left" },
-  PODE:         { name: "Podemos",                                    colorHex: "#FF4B00", ideology: "center" },
-  AVANTE:       { name: "Avante",                                     colorHex: "#1A7EC8", ideology: "center_left" },
-  REDE:         { name: "Rede Sustentabilidade",                      colorHex: "#00A859", ideology: "center_left" },
-  PATRIOTA:     { name: "Patriota",                                   colorHex: "#006400", ideology: "right" },
-  PCB:          { name: "Partido Comunista Brasileiro",               colorHex: "#8B0000", ideology: "far_left" },
-  PCO:          { name: "Partido da Causa Operária",                  colorHex: "#B00000", ideology: "far_left" },
-};
 
 async function main() {
   console.log("Seeding database...");
@@ -131,6 +101,8 @@ async function main() {
 
     console.log(`  ${s.office === "president" ? "Presidente" : "Governador"}: ${s.name} (${s.party})`);
   }
+
+  await seedPoliticalProfiles(prisma);
 
   console.log("\nSeed completed.");
 }

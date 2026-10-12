@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { Routes } from "@/routes";
 
 // ─── LogoMark (inline, auth layout não usa Navbar) ───────────────────────────
 
@@ -24,7 +25,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Header minimal */}
         <header className="flex h-16 items-center px-6">
-          <Link href="/" className="flex items-center gap-2.5 text-foreground">
+          <Link href={Routes.home()} className="flex items-center gap-2.5 text-foreground">
             <LogoMark />
             <span className="font-display font-bold tracking-tight">Smart Politics</span>
           </Link>

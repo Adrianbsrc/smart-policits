@@ -2,7 +2,8 @@ import { GlassCard } from "@/components/ui/glass-card";
 
 // ─── FAQ data ─────────────────────────────────────────────────────────────────
 
-const FAQ_ITEMS = [
+/** Exportado para reuso no FAQPage JSON-LD (page.tsx) — mesmo conteúdo, sem duplicar. */
+export const FAQ_ITEMS = [
   {
     question: "Como são calculadas as notas dos políticos?",
     answer:

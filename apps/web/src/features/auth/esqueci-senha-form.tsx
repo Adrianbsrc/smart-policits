@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { sendPasswordReset } from "@/features/auth/auth.service";
 import { esqueciSenhaSchema, type EsqueciSenhaFormValues } from "@/features/auth/schemas";
+import { Routes } from "@/routes";
 
 export function EsqueciSenhaForm() {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export function EsqueciSenhaForm() {
         <p className="mt-2 text-sm text-muted-foreground">
           Verifique sua caixa de entrada e clique no link para redefinir sua senha.
         </p>
-        <Link href="/login" className="mt-4 inline-block text-sm text-primary hover:underline">
+        <Link href={Routes.login()} className="mt-4 inline-block text-sm text-primary hover:underline">
           Voltar ao login
         </Link>
       </div>

@@ -5,17 +5,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Routes } from "@/routes";
 
 const PUBLIC_LINKS = [
-  { href: "/ranking", label: "Ranking" },
-  { href: "/feed", label: "Feed" },
-  { href: "/quiz", label: "Quiz" },
-  { href: "/comparar", label: "Comparar" },
-  { href: "/metodologia", label: "Metodologia" },
+  { href: Routes.ranking(), label: "Ranking" },
+  { href: Routes.feed(), label: "Feed" },
+  { href: Routes.quiz(), label: "Quiz" },
+  { href: Routes.compare(), label: "Comparar" },
+  { href: Routes.methodology(), label: "Metodologia" },
 ] as const;
 
 const AUTH_LINKS = [
-  { href: "/favoritos", label: "Favoritos" },
+  { href: Routes.favoritos(), label: "Favoritos" },
 ] as const;
 
 interface MobileMenuProps {
@@ -86,7 +87,7 @@ export function MobileMenu({ isLoggedIn }: MobileMenuProps) {
             <div className="mt-4 flex flex-col gap-2 px-4">
               {isLoggedIn ? (
                 <Link
-                  href="/dashboard"
+                  href={Routes.dashboard()}
                   className="flex h-10 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground"
                 >
                   Dashboard
@@ -94,13 +95,13 @@ export function MobileMenu({ isLoggedIn }: MobileMenuProps) {
               ) : (
                 <>
                   <Link
-                    href="/login"
+                    href={Routes.login()}
                     className="flex h-10 items-center justify-center rounded-md border border-border text-sm font-medium text-foreground transition-colors hover:bg-muted"
                   >
                     Entrar
                   </Link>
                   <Link
-                    href="/quiz"
+                    href={Routes.quiz()}
                     className="flex h-10 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     Fazer Quiz

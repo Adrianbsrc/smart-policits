@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage } from "@/components/legal/legal-page";
 import { LegalSection } from "@/components/legal/legal-section";
+import { Routes } from "@/routes";
 
 export const metadata: Metadata = {
   title: "LGPD — Smart Politics",
@@ -70,8 +71,8 @@ export default function LgpdPage() {
       </LegalSection>
 
       <div className="mt-8 flex gap-4 text-sm">
-        <Link href="/privacidade" className="text-primary hover:text-primary/80">Política de Privacidade →</Link>
-        <Link href="/termos" className="text-primary hover:text-primary/80">Termos de Uso →</Link>
+        <Link href={Routes.privacidade()} className="text-primary hover:text-primary/80">Política de Privacidade →</Link>
+        <Link href={Routes.termos()} className="text-primary hover:text-primary/80">Termos de Uso →</Link>
       </div>
     </LegalPage>
   );

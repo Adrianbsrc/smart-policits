@@ -20,10 +20,15 @@
     "sync:tse-bens":       "tsx scripts/sync-tse-bens.ts",
     "sync:cnj-integrity":  "tsx scripts/sync-cnj-integrity.ts",
     "sync:all":            "tsx scripts/sync-all.ts",
+    "test:tse-collector":  "tsx scripts/manual-test-tse-collector.ts",
+    "test:import-engine":  "tsx scripts/manual-test-import-engine.ts",
+    "test:data-quality":   "tsx scripts/manual-test-data-quality.ts",
+    "test:persist-political-profile": "tsx scripts/manual-test-political-profile-writer.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
+    "@smart-politics/core": "workspace:*",
     "@smart-politics/db": "workspace:*",
     "@smart-politics/scoring": "workspace:*",
     "@smart-politics/types": "workspace:*",

@@ -315,6 +315,9 @@ importers:
       '@prisma/adapter-pg':
         specifier: ^7.8.0
         version: 7.8.0
+      '@smart-politics/core':
+        specifier: workspace:*
+        version: link:../core
       '@smart-politics/db':
         specifier: workspace:*
         version: link:../db

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Routes } from "@/routes";
 
 // ─── Steps ────────────────────────────────────────────────────────────────────
 
@@ -46,9 +47,9 @@ export function HowItWorksSection() {
         </div>
 
         {/* Steps grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <ol className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {STEPS.map((step, i) => (
-            <GlassCard key={step.step} className="relative flex flex-col gap-3 p-6">
+            <GlassCard key={step.step} as="li" className="relative flex flex-col gap-3 p-6">
               {/* Connector line — desktop only */}
               {i < STEPS.length - 1 && (
                 <div
@@ -70,12 +71,12 @@ export function HowItWorksSection() {
               </div>
             </GlassCard>
           ))}
-        </div>
+        </ol>
 
         {/* CTA */}
         <div className="mt-10 text-center">
           <Link
-            href="/quiz"
+            href={Routes.quiz()}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] bg-primary px-8 text-[14px] font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-[0.97]"
           >
             Começar agora

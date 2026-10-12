@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://smartpolitics.com.br";
+import { Routes } from "@/routes";
+import { SITE_URL, absoluteUrl } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,10 +8,17 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/(authenticated)/", "/resultado"],
+        disallow: [
+          "/api/",
+          "/debug/",
+          Routes.dashboard(),
+          Routes.favoritos(),
+          Routes.configuracoes(),
+          Routes.quizResult(),
+        ],
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
-    host: BASE_URL,
+    sitemap: absoluteUrl("/sitemap.xml"),
+    host: SITE_URL,
   };
 }

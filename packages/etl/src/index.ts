@@ -30,3 +30,24 @@ export * from "./sources/portal-transparencia";
 
 // ─── CNJ Datajud ─────────────────────────────────────────────────────────────
 export * from "./sources/cnj";
+
+// ─── Arquitetura ETL (contratos, pipeline, registries) ─────────────────────────
+export * from "./contracts";
+export * from "./shared";
+export * from "./jobs";
+export * from "./sources/source.contract";
+export * from "./sources/source-registry";
+export * from "./domain";
+
+// ─── Collector/Normalizer TSE (primeira fonte real) ─────────────────────────────
+export * from "./collectors/tse";
+export * from "./normalizers/tse";
+
+// ─── Import Engine (decide como candidatos normalizados entram na plataforma) ──
+export * from "./import-engine";
+
+// ─── Data Quality Engine (valida qualidade antes do Import Engine) ─────────────
+export * from "./data-quality";
+
+// ─── Writers (primeira persistência real do ETL) ────────────────────────────────
+export * from "./writers";

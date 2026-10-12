@@ -1,20 +1,21 @@
 import Link from "next/link";
+import { Routes } from "@/routes";
 
 const footerLinks = {
   produto: [
-    { href: "/quiz", label: "Quiz Eleitoral" },
-    { href: "/ranking", label: "Ranking de Políticos" },
-    { href: "/cola-eleitoral", label: "Cola Eleitoral" },
-    { href: "/blog", label: "Blog" },
+    { href: Routes.quiz(), label: "Quiz Eleitoral" },
+    { href: Routes.ranking(), label: "Ranking de Políticos" },
+    { href: Routes.colaEleitoral(), label: "Cola Eleitoral" },
+    { href: Routes.blog(), label: "Blog" },
   ],
   institucional: [
-    { href: "/metodologia", label: "Metodologia" },
-    { href: "/blog", label: "Imprensa" },
+    { href: Routes.methodology(), label: "Metodologia" },
+    { href: Routes.blog(), label: "Imprensa" },
   ],
   legal: [
-    { href: "/privacidade", label: "Privacidade" },
-    { href: "/termos", label: "Termos de Uso" },
-    { href: "/lgpd", label: "LGPD" },
+    { href: Routes.privacidade(), label: "Privacidade" },
+    { href: Routes.termos(), label: "Termos de Uso" },
+    { href: Routes.lgpd(), label: "LGPD" },
   ],
 } as const;
 
@@ -27,7 +28,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-5">
           {/* Brand */}
           <div className="col-span-2 flex flex-col gap-4 lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5 text-foreground">
+            <Link href={Routes.home()} className="flex items-center gap-2.5 text-foreground">
               <div className="relative flex h-8 w-8 items-center justify-center rounded-[9px] bg-gradient-to-br from-primary to-secondary">
                 <div className="absolute inset-[4px] rounded-[5px] bg-background" />
                 <span className="relative text-[13px] font-extrabold text-primary">★</span>

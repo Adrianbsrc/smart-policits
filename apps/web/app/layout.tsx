@@ -1,39 +1,38 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { JsonLdScript } from "@/components/seo/json-ld-script";
+import { SITE_DEFAULT_DESCRIPTION, SITE_DEFAULT_TITLE, SITE_LOCALE, SITE_NAME, SITE_URL, buildWebsiteJsonLd } from "@/lib/seo";
 import "./globals.css";
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://smartpolitics.com.br";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Smart Politics — Vote com consciência",
-    template: "%s | Smart Politics",
+    default: SITE_DEFAULT_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Plataforma imparcial para ajudar você a decidir seu voto com base em dados públicos, histórico político e alinhamento de valores.",
+  description: SITE_DEFAULT_DESCRIPTION,
   keywords: [
     "eleições", "candidatos", "voto consciente", "política", "brasil",
     "quiz eleitoral", "ranking candidatos", "dados eleitorais", "TSE",
     "transparência política", "histórico político",
   ],
-  authors: [{ name: "Smart Politics", url: BASE_URL }],
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
   openGraph: {
     type: "website",
-    locale: "pt_BR",
-    siteName: "Smart Politics",
-    title: "Smart Politics — Vote com consciência",
+    locale: SITE_LOCALE,
+    siteName: SITE_NAME,
+    title: SITE_DEFAULT_TITLE,
     description: "Descubra quais candidatos mais se alinham com os seus valores.",
-    url: BASE_URL,
+    url: SITE_URL,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Smart Politics — Vote com consciência",
+    title: SITE_DEFAULT_TITLE,
     description: "Descubra quais candidatos mais se alinham com os seus valores.",
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
@@ -42,18 +41,7 @@ export const metadata: Metadata = {
   },
 };
 
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "Smart Politics",
-  url: BASE_URL,
-  description: "Plataforma imparcial para ajudar você a decidir seu voto com base em dados públicos.",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: { "@type": "EntryPoint", urlTemplate: `${BASE_URL}/ranking?search={search_term_string}` },
-    "query-input": "required name=search_term_string",
-  },
-};
+const websiteJsonLd = buildWebsiteJsonLd();
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -63,11 +51,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       suppressHydrationWarning
     >
       <head>
-        <script
-          type="application/ld+json"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
-        />
+        <JsonLdScript data={websiteJsonLd} />
         {process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID && (
           <script
             async

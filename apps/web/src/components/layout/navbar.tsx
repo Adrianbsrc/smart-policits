@@ -11,19 +11,20 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { cn } from "@/lib/utils";
+import { Routes } from "@/routes";
 
 // ─── Nav items ──────────────────────────────────────────────────────────────
 
 const PUBLIC_NAV = [
-  { href: "/ranking",     label: "Ranking",     featured: false },
-  { href: "/feed",        label: "Feed",        featured: true  }, // destaque com pulse dot
-  { href: "/comparar",    label: "Comparar",    featured: false },
-  { href: "/quiz",        label: "Quiz",        featured: false },
-  { href: "/metodologia", label: "Metodologia", featured: false },
+  { href: Routes.ranking(),     label: "Ranking",     featured: false },
+  { href: Routes.feed(),        label: "Feed",        featured: true  }, // destaque com pulse dot
+  { href: Routes.compare(),     label: "Comparar",    featured: false },
+  { href: Routes.quiz(),        label: "Quiz",        featured: false },
+  { href: Routes.methodology(), label: "Metodologia", featured: false },
 ] as const;
 
 const AUTH_NAV = [
-  { href: "/favoritos", label: "Favoritos", featured: false },
+  { href: Routes.favoritos(), label: "Favoritos", featured: false },
 ] as const;
 
 // ─── Logo mark ──────────────────────────────────────────────────────────────
@@ -93,7 +94,7 @@ export function Navbar() {
         )}
       >
         {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center gap-2.5 text-foreground">
+        <Link href={Routes.home()} className="flex shrink-0 items-center gap-2.5 text-foreground">
           <LogoMark />
           <span className="hidden font-display text-base font-bold tracking-tight sm:block">
             Smart Politics
@@ -161,13 +162,13 @@ export function Navbar() {
               ) : (
                 <div className="hidden items-center gap-1.5 md:flex">
                   <Link
-                    href="/login"
+                    href={Routes.login()}
                     className="rounded-xl px-3.5 py-[7px] text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Entrar
                   </Link>
                   <Link
-                    href="/quiz"
+                    href={Routes.quiz()}
                     className={cn(
                       "inline-flex h-8 items-center justify-center rounded-xl bg-primary px-4",
                       "text-[12.5px] font-semibold text-white transition-all hover:bg-primary-hover active:scale-[0.97]",

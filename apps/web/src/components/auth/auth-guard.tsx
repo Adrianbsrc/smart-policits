@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { Routes } from "@/routes";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
@@ -14,7 +15,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        router.replace("/login");
+        router.replace(Routes.login());
       } else {
         setAuthenticated(true);
       }
@@ -25,7 +26,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         setAuthenticated(false);
-        router.replace("/login");
+        router.replace(Routes.login());
       }
     });
 
